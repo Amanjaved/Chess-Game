@@ -77,12 +77,12 @@ fun GameOverDialog(
                 .clip(RoundedCornerShape(22.dp))
                 .background(
                     androidx.compose.ui.graphics.Brush.verticalGradient(
-                        listOf(Color(0xFF281C13), Color(0xFF19110B), Color(0xFF0F0A06))
+                        listOf(Color(0xFF131C2D), Color(0xFF0C1320), Color(0xFF070A10))
                     )
                 )
                 .border(
                     width = 1.5.dp,
-                    color = if (isWinner) StudyAmberAccent else if (isDraw) Color(0xFF64B5F6) else StudyTableFrame,
+                    color = if (isWinner) Color(0xFFFFB703) else if (isDraw) Color(0xFF38BDF8) else Color(0xFF26354E),
                     shape = RoundedCornerShape(22.dp)
                 )
                 .padding(24.dp)
@@ -94,7 +94,8 @@ fun GameOverDialog(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(RoundedCornerShape(18.dp))
-                        .background(if (isWinner) StudyAmberAccent.copy(alpha = 0.2f) else if (isDraw) Color(0x3064B5F6) else Color(0x30E53935))
+                        .background(if (isWinner) Color(0x30FFB703) else if (isDraw) Color(0x3038BDF8) else Color(0x30FF5252))
+                        .border(1.dp, if (isWinner) Color(0x66FFB703) else if (isDraw) Color(0x6638BDF8) else Color(0x66FF5252), RoundedCornerShape(18.dp))
                 ) {
                     Text(
                         text = if (isWinner) "🏆" else if (isDraw) "🤝" else "⚔️",
@@ -109,16 +110,18 @@ fun GameOverDialog(
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 3.sp,
-                    color = if (isWinner) StudyAmberAccent else StudyParchmentCream
+                    fontFamily = GameFont,
+                    color = if (isWinner) Color(0xFFFFB703) else if (isDraw) Color(0xFF38BDF8) else Color(0xFFF8FAFC)
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
                     text = subtitle,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = StudyParchmentCream.copy(alpha = 0.8f)
+                    fontFamily = GameFont,
+                    color = Color(0xFF94A3B8)
                 )
 
                 Spacer(modifier = Modifier.height(18.dp))
@@ -128,23 +131,24 @@ fun GameOverDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(StudyParchmentCream)
-                        .border(1.dp, StudyParchmentBorder, RoundedCornerShape(12.dp))
+                        .background(Color(0xFF0D1420))
+                        .border(1.dp, Color(0xFF1E2B3E), RoundedCornerShape(12.dp))
                         .padding(vertical = 10.dp, horizontal = 14.dp),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "MOVES", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = StudyParchmentInkFaded)
-                        Text(text = "$moveCount", fontSize = 16.sp, fontWeight = FontWeight.Black, color = StudyParchmentInk)
+                        Text(text = "MOVES", fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = GameFont, color = Color(0xFF64748B))
+                        Text(text = "$moveCount", fontSize = 16.sp, fontWeight = FontWeight.Black, fontFamily = GameFont, color = Color(0xFFF8FAFC))
                     }
-                    Box(modifier = Modifier.width(1.dp).height(28.dp).background(StudyParchmentBorder))
+                    Box(modifier = Modifier.width(1.dp).height(28.dp).background(Color(0xFF1E2B3E)))
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "RESULT", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = StudyParchmentInkFaded)
+                        Text(text = "RESULT", fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = GameFont, color = Color(0xFF64748B))
                         Text(
                             text = if (outcome.isDraw) "½ - ½" else if (outcome.winner == PieceColor.WHITE) "1 - 0" else "0 - 1",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black,
-                            color = if (isWinner) Color(0xFF2E7D32) else if (isDraw) Color(0xFF1565C0) else Color(0xFFC62828)
+                            fontFamily = GameFont,
+                            color = if (isWinner) Color(0xFF10B981) else if (isDraw) Color(0xFF38BDF8) else Color(0xFFFF5252)
                         )
                     }
                 }
@@ -155,13 +159,13 @@ fun GameOverDialog(
                 if (onAnalyseGame != null) {
                     Button(
                         onClick = onAnalyseGame,
-                        colors = ButtonDefaults.buttonColors(containerColor = StudyAmberAccent),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFB703)),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth().height(46.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(text = "🔍 ", fontSize = 14.sp)
-                            Text("ANALYSE GAME", fontWeight = FontWeight.Black, letterSpacing = 1.sp, color = Color(0xFF1B140E))
+                            Text("ANALYSE GAME", fontWeight = FontWeight.Black, letterSpacing = 1.sp, fontFamily = GameFont, color = Color(0xFF1B140E))
                         }
                     }
 
@@ -170,8 +174,8 @@ fun GameOverDialog(
 
                 Button(
                     onClick = onPlayAgain,
-                    colors = ButtonDefaults.buttonColors(containerColor = if (onAnalyseGame == null) StudyAmberAccent else Color(0xFF38291F)),
-                    border = if (onAnalyseGame != null) androidx.compose.foundation.BorderStroke(1.dp, Color(0x44D4A373)) else null,
+                    colors = ButtonDefaults.buttonColors(containerColor = if (onAnalyseGame == null) Color(0xFFFFB703) else Color(0xFF162133)),
+                    border = if (onAnalyseGame != null) androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF26354E)) else null,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth().height(44.dp)
                 ) {
@@ -179,7 +183,8 @@ fun GameOverDialog(
                         "PLAY AGAIN",
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp,
-                        color = if (onAnalyseGame == null) Color(0xFF111418) else StudyParchmentCream
+                        fontFamily = GameFont,
+                        color = if (onAnalyseGame == null) Color(0xFF111418) else Color(0xFFF8FAFC)
                     )
                 }
 
@@ -192,17 +197,19 @@ fun GameOverDialog(
                     OutlinedButton(
                         onClick = onReviewBoard,
                         shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF26354E)),
                         modifier = Modifier.weight(1f).height(42.dp)
                     ) {
-                        Text("Review", color = StudyParchmentCream, fontSize = 12.sp)
+                        Text("Review", color = Color(0xFF94A3B8), fontFamily = GameFont, fontSize = 12.sp)
                     }
 
                     OutlinedButton(
                         onClick = onMainMenu,
                         shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF26354E)),
                         modifier = Modifier.weight(1f).height(42.dp)
                     ) {
-                        Text("Menu", color = StudyParchmentCream, fontSize = 12.sp)
+                        Text("Menu", color = Color(0xFF94A3B8), fontFamily = GameFont, fontSize = 12.sp)
                     }
                 }
             }

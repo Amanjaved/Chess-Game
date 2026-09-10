@@ -64,17 +64,18 @@ fun MatchResultOverlay(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .fillMaxWidth(0.95f)
-                .shadow(32.dp, RoundedCornerShape(22.dp), spotColor = Color(0xCC000000))
+                .shadow(32.dp, RoundedCornerShape(22.dp), spotColor = if (isWin) Color(0xFFFFB703) else Color.Black)
                 .clip(RoundedCornerShape(22.dp))
                 .background(
                     Brush.verticalGradient(
-                        listOf(Color(0xFF281C13), Color(0xFF19110B), Color(0xFF0F0A06))
+                        listOf(Color(0xFF131C2D), Color(0xFF0C1320), Color(0xFF070A10))
                     )
                 )
                 .border(
                     width = 2.dp,
                     brush = Brush.linearGradient(
-                        listOf(StudyAmberAccent, StudyTableFrame, StudyAmberAccent)
+                        if (isWin) listOf(Color(0xFFFFD54F), Color(0xFFFFB703), Color(0xFFFF8F00))
+                        else listOf(Color(0xFF26354E), Color(0xFF1A2638), Color(0xFF26354E))
                     ),
                     shape = RoundedCornerShape(22.dp)
                 )
@@ -147,11 +148,12 @@ fun MatchResultOverlay(
 
                 // Result Title
                 Text(
-                    text = if (isDraw) "DRAW" else if (isWin) "YOU WIN!" else "AI WINS",
+                    text = if (isDraw) "STALEMATE / DRAW" else if (isWin) "VICTORY!" else "DEFEAT",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 3.sp,
-                    color = if (isWin) StudyAmberAccent else StudyParchmentCream
+                    fontFamily = GameFont,
+                    color = if (isWin) Color(0xFFFFB703) else if (isDraw) Color(0xFF38BDF8) else Color(0xFFFF3366)
                 )
 
                 Text(
@@ -160,9 +162,11 @@ fun MatchResultOverlay(
                         isLoss -> "CHECKMATE • THE ENGINE HAS PREVAILED"
                         else -> "PEACEFUL CONCLUSION • DRAW"
                     },
-                    fontSize = 11.sp,
+                    fontSize = 10.5.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFC7B7A5)
+                    fontFamily = GameFont,
+                    letterSpacing = 0.8.sp,
+                    color = Color(0xFF94A3B8)
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -172,13 +176,13 @@ fun MatchResultOverlay(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(14.dp))
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFF382516), Color(0xFF28180E))
+                                    listOf(Color(0xFF1A2638), Color(0xFF101726))
                                 )
                             )
-                            .border(1.dp, Color(0x55DFB36E), RoundedCornerShape(12.dp))
+                            .border(1.dp, Color(0xFF2C3C56), RoundedCornerShape(14.dp))
                             .padding(10.dp)
                     ) {
                         Column(
@@ -199,7 +203,8 @@ fun MatchResultOverlay(
                                         text = "+${xpSummary.totalXpGained} XP EARNED",
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Black,
-                                        color = StudyAmberAccent
+                                        fontFamily = GameFont,
+                                        color = Color(0xFFFFB703)
                                     )
                                 }
 
@@ -207,13 +212,14 @@ fun MatchResultOverlay(
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(6.dp))
-                                            .background(Color(0xFFE5A93C))
+                                            .background(Color(0xFFFFB703))
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     ) {
                                         Text(
                                             text = "LEVEL UP! LVL ${xpSummary.newLevel}",
                                             fontSize = 9.sp,
                                             fontWeight = FontWeight.Black,
+                                            fontFamily = GameFont,
                                             color = Color(0xFF1B1107)
                                         )
                                     }
@@ -222,7 +228,8 @@ fun MatchResultOverlay(
                                         text = "Level ${xpSummary.newLevel}",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = StudyParchmentCream
+                                        fontFamily = GameFont,
+                                        color = Color(0xFFF8FAFC)
                                     )
                                 }
                             }
@@ -241,7 +248,8 @@ fun MatchResultOverlay(
                                 Text(
                                     text = details.joinToString(" • "),
                                     fontSize = 9.5.sp,
-                                    color = Color(0xFFAFA293)
+                                    fontFamily = GameFont,
+                                    color = Color(0xFF94A3B8)
                                 )
                             }
                         }
@@ -257,8 +265,8 @@ fun MatchResultOverlay(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0x35E5A93C))
-                            .border(1.dp, Color(0x66E5A93C), RoundedCornerShape(10.dp))
+                            .background(Color(0x25FFB703))
+                            .border(1.dp, Color(0x66FFB703), RoundedCornerShape(10.dp))
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
                         Row(
@@ -271,12 +279,14 @@ fun MatchResultOverlay(
                                     text = "ACHIEVEMENT UNLOCKED: ${ach.title.uppercase()}",
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = StudyAmberAccent
+                                    fontFamily = GameFont,
+                                    color = Color(0xFFFFB703)
                                 )
                                 Text(
                                     text = ach.description,
                                     fontSize = 9.5.sp,
-                                    color = StudyParchmentCream
+                                    fontFamily = GameFont,
+                                    color = Color(0xFFF8FAFC)
                                 )
                             }
                         }
@@ -285,27 +295,27 @@ fun MatchResultOverlay(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                // Physical Scorecard Stats Card
+                // Scorecard Stats Card
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(StudyParchmentCream)
-                        .border(1.dp, StudyParchmentBorder, RoundedCornerShape(12.dp))
+                        .background(Color(0xFF0D1420))
+                        .border(1.dp, Color(0xFF1E2B3E), RoundedCornerShape(12.dp))
                         .padding(vertical = 8.dp, horizontal = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "MOVES", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = StudyParchmentInkFaded)
-                        Text(text = "$moveCount", fontSize = 15.sp, fontWeight = FontWeight.Black, color = StudyParchmentInk)
+                        Text(text = "MOVES", fontSize = 9.sp, fontWeight = FontWeight.Bold, fontFamily = GameFont, color = Color(0xFF64748B))
+                        Text(text = "$moveCount", fontSize = 15.sp, fontWeight = FontWeight.Black, fontFamily = GameFont, color = Color(0xFFF8FAFC))
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "DURATION", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = StudyParchmentInkFaded)
-                        Text(text = timeFormatted, fontSize = 15.sp, fontWeight = FontWeight.Black, color = StudyParchmentInk)
+                        Text(text = "DURATION", fontSize = 9.sp, fontWeight = FontWeight.Bold, fontFamily = GameFont, color = Color(0xFF64748B))
+                        Text(text = timeFormatted, fontSize = 15.sp, fontWeight = FontWeight.Black, fontFamily = GameFont, color = Color(0xFFF8FAFC))
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "OPPONENT", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = StudyParchmentInkFaded)
-                        Text(text = opponentName, fontSize = 12.sp, fontWeight = FontWeight.Black, color = StudyParchmentInk)
+                        Text(text = "OPPONENT", fontSize = 9.sp, fontWeight = FontWeight.Bold, fontFamily = GameFont, color = Color(0xFF64748B))
+                        Text(text = opponentName, fontSize = 12.sp, fontWeight = FontWeight.Black, fontFamily = GameFont, color = Color(0xFFFFB703))
                     }
                 }
 
@@ -317,7 +327,7 @@ fun MatchResultOverlay(
                         SoundManager.playClick()
                         onPlayAgain()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = StudyAmberAccent),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFB703)),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -333,6 +343,7 @@ fun MatchResultOverlay(
                             fontSize = 13.5.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 1.sp,
+                            fontFamily = GameFont,
                             color = Color(0xFF1B140E)
                         )
                     }
@@ -346,8 +357,8 @@ fun MatchResultOverlay(
                         SoundManager.playClick()
                         onAnalyseGame()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF38291F)),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x44D4A373)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF162133)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF26354E)),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -363,7 +374,8 @@ fun MatchResultOverlay(
                             fontSize = 12.5.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp,
-                            color = StudyParchmentCream
+                            fontFamily = GameFont,
+                            color = Color(0xFFF8FAFC)
                         )
                     }
                 }
@@ -381,11 +393,12 @@ fun MatchResultOverlay(
                             onReviewBoard()
                         },
                         shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF26354E)),
                         modifier = Modifier
                             .weight(1f)
                             .height(40.dp)
                     ) {
-                        Text("Review Board", fontSize = 11.5.sp, color = StudyParchmentCream)
+                        Text("Review Board", fontSize = 11.5.sp, fontFamily = GameFont, color = Color(0xFF94A3B8))
                     }
 
                     OutlinedButton(
@@ -394,11 +407,12 @@ fun MatchResultOverlay(
                             onMainMenu()
                         },
                         shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF26354E)),
                         modifier = Modifier
                             .weight(1f)
                             .height(40.dp)
                     ) {
-                        Text("Main Menu", fontSize = 11.5.sp, color = StudyParchmentCream)
+                        Text("Main Menu", fontSize = 11.5.sp, fontFamily = GameFont, color = Color(0xFF94A3B8))
                     }
                 }
             }

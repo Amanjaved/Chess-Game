@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -35,11 +36,15 @@ fun GameMenuOverlay(
     Dialog(onDismissRequest = onResume) {
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.90f)
+                .fillMaxWidth(0.92f)
                 .shadow(28.dp, RoundedCornerShape(20.dp), spotColor = Color(0xCC000000))
                 .clip(RoundedCornerShape(20.dp))
-                .background(StudyParchmentCream)
-                .border(2.dp, StudyTableFrame, RoundedCornerShape(20.dp))
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color(0xFF131C2D), Color(0xFF0C1320))
+                    )
+                )
+                .border(1.5.dp, Color(0xFF26354E), RoundedCornerShape(20.dp))
                 .padding(22.dp)
         ) {
             Column(
@@ -58,12 +63,13 @@ fun GameMenuOverlay(
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 3.sp,
-                            color = StudyParchmentInk
+                            fontFamily = GameFont,
+                            color = Color(0xFFF8FAFC)
                         )
                         Text(
-                            text = "Match options & preferences",
+                            text = "Match options & tactical preferences",
                             fontSize = 11.sp,
-                            color = StudyParchmentInkFaded
+                            color = Color(0xFF94A3B8)
                         )
                     }
 
@@ -75,9 +81,9 @@ fun GameMenuOverlay(
                         modifier = Modifier
                             .size(34.dp)
                             .clip(androidx.compose.foundation.shape.CircleShape)
-                            .background(Color(0x18000000))
+                            .background(Color(0xFF1C273B))
                     ) {
-                        Text("✕", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = StudyParchmentInk)
+                        Text("✕", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF8FAFC))
                     }
                 }
 
@@ -106,41 +112,42 @@ fun GameMenuOverlay(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0x102B2118))
-                                .border(1.dp, StudyParchmentBorder, RoundedCornerShape(10.dp))
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF162133))
+                                .border(1.dp, Color(0xFF26354E), RoundedCornerShape(12.dp))
                                 .clickable {
                                     SoundManager.playClick()
                                     action()
                                 }
-                                .padding(horizontal = 14.dp, vertical = 9.dp)
+                                .padding(horizontal = 14.dp, vertical = 11.dp)
                         ) {
                             Column {
                                 Text(
                                     text = title,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = StudyParchmentInk
+                                    fontFamily = GameFont,
+                                    color = Color(0xFFF8FAFC)
                                 )
                                 Text(
                                     text = subtitle,
                                     fontSize = 10.sp,
-                                    color = StudyParchmentInkFaded
+                                    color = Color(0xFF94A3B8)
                                 )
                             }
-                            Text(text = "→", fontSize = 14.sp, color = StudyAmberAccent)
+                            Text(text = "→", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color(0xFFFFB703))
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Bottom quote matching Screen 7
+                // Bottom quote
                 Text(
-                    text = "“A master knows when to pause and reflect.”",
+                    text = "“Every chess master was once a beginner.”",
                     fontSize = 11.sp,
                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                    color = StudyParchmentInkFaded,
+                    color = Color(0xFF64748B),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
             }

@@ -13,39 +13,39 @@ import androidx.compose.ui.unit.sp
 object ChessDeskTokens {
 
     // ==========================================
-    // 1. MATERIAL PALETTE (WOOD, PARCHMENT, BRASS)
+    // 1. MATERIAL PALETTE (OBSIDIAN, GOLD, NEON)
     // ==========================================
-    val DeskEspressoDark = Color(0xFF0D0907)
-    val DeskTimberDark = Color(0xFF19120D)
-    val DeskMahoganyMid = Color(0xFF261B14)
-    val DeskWalnutFrame = Color(0xFF38271D)
+    val DeskEspressoDark = Color(0xFF070A10)
+    val DeskTimberDark = Color(0xFF0F1726)
+    val DeskMahoganyMid = Color(0xFF1B273C)
+    val DeskWalnutFrame = Color(0xFF2B3A54)
 
-    val ParchmentCream = Color(0xFFF7F1E5)
-    val ParchmentCard = Color(0xFFEFE6D5)
-    val ParchmentFaded = Color(0xFFDACFBD)
-    val InkFountainPen = Color(0xFF1E1712)
-    val InkSecondary = Color(0xFF5A4D42)
-    val InkFaded = Color(0xFF8C7D70)
+    val ParchmentCream = Color(0xFFF8FAFC)
+    val ParchmentCard = Color(0xFF162032)
+    val ParchmentFaded = Color(0xFF94A3B8)
+    val InkFountainPen = Color(0xFFFFFFFF)
+    val InkSecondary = Color(0xFF94A3B8)
+    val InkFaded = Color(0xFF64748B)
 
-    val BrassAccent = Color(0xFFE5A93C)
-    val AmberGlow = Color(0xFFD49B55)
-    val SoftGold = Color(0xFFEBD18C)
+    val BrassAccent = Color(0xFFFFB703)
+    val AmberGlow = Color(0xFFFFC53D)
+    val SoftGold = Color(0xFFFFE082)
 
     val TableVignette = listOf(
-        Color(0xFF2C1F17),
-        Color(0xFF1B130E),
-        Color(0xFF0F0B08),
-        Color(0xFF080504)
+        Color(0xFF1B273C),
+        Color(0xFF111827),
+        Color(0xFF0B0F18),
+        Color(0xFF06090F)
     )
 
     // Move Quality Color Tokens
-    val QualityBrilliant = Color(0xFF26C6DA) // Cyan / Diamond glow
-    val QualityBest = Color(0xFF588157)      // Deep sage emerald
-    val QualityGood = Color(0xFF8DA378)      // Subtle olive
-    val QualityBook = Color(0xFF7E8B9B)      // Parchment slate blue
-    val QualityInaccuracy = Color(0xFFE5A93C) // Warm amber
-    val QualityMistake = Color(0xFFD06A3B)   // Terracotta orange
-    val QualityBlunder = Color(0xFFC93B2B)   // Wax seal crimson
+    val QualityBrilliant = Color(0xFF00E5FF) // Neon Cyan glow
+    val QualityBest = Color(0xFF10B981)      // Vivid Emerald
+    val QualityGood = Color(0xFF34D399)      // Bright mint
+    val QualityBook = Color(0xFF38BDF8)      // Electric blue
+    val QualityInaccuracy = Color(0xFFFFB703) // Warm amber
+    val QualityMistake = Color(0xFFFB923C)   // Bright orange
+    val QualityBlunder = Color(0xFFEF4444)   // Crimson red
 
     // ==========================================
     // 2. SPACING SYSTEM

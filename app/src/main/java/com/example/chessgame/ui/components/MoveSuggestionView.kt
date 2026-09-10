@@ -61,12 +61,12 @@ fun MoveSuggestionSection(
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        Color(0xF018120E),
-                        Color(0xF8120C08)
+                        Color(0xF0111927),
+                        Color(0xF80B101B)
                     )
                 )
             )
-            .border(1.dp, Color(0x30DFB36E), RoundedCornerShape(16.dp))
+            .border(1.dp, Color(0xFF26354E), RoundedCornerShape(16.dp))
             .padding(horizontal = 12.dp, vertical = 10.dp)
     ) {
         // Section Header matching reference
@@ -85,15 +85,16 @@ fun MoveSuggestionSection(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
                     Text(
-                        text = "Best Moves",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = StudyParchmentCream
+                        text = "TACTICAL HINTS",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.sp,
+                        color = Color(0xFFF8FAFC)
                     )
                     Text(
-                        text = "Tap a move to see it on the board",
-                        fontSize = 10.5.sp,
-                        color = Color(0xFFAFA293)
+                        text = "Tap a move to preview the tactical line",
+                        fontSize = 10.sp,
+                        color = Color(0xFF94A3B8)
                     )
                 }
             }
@@ -258,37 +259,37 @@ fun MoveSuggestionCard(
             "${suggestion.piece.name.lowercase()} from ${suggestion.fromAlgebraic} to ${suggestion.toAlgebraic}."
 
     val badgeColor = when (suggestion.classification) {
-        MoveClassification.BEST -> StudyAmberAccent
-        MoveClassification.STRONG -> Color(0xFFEDE0D0)
-        else -> Color(0xFFAFA293)
+        MoveClassification.BEST -> Color(0xFFFFB703)
+        MoveClassification.STRONG -> Color(0xFF00E5FF)
+        else -> Color(0xFF94A3B8)
     }
 
     Box(
         modifier = modifier
             .width(112.dp)
             .height(118.dp)
-            .shadow(if (isSelected) 8.dp else 2.dp, RoundedCornerShape(12.dp), spotColor = Color(0x66DFB36E))
+            .shadow(if (isSelected) 8.dp else 2.dp, RoundedCornerShape(12.dp), spotColor = if (isSelected) Color(0xFFFFB703) else Color.Black)
             .clip(RoundedCornerShape(12.dp))
             .background(
                 if (isSelected) {
                     Brush.verticalGradient(
                         listOf(
-                            Color(0xFF2E2015),
-                            Color(0xFF1F140D)
+                            Color(0xFF1E2D44),
+                            Color(0xFF131D2E)
                         )
                     )
                 } else {
                     Brush.verticalGradient(
                         listOf(
-                            Color(0xFF1E1611),
-                            Color(0xFF140D09)
+                            Color(0xFF131C2D),
+                            Color(0xFF0D1420)
                         )
                     )
                 }
             )
             .border(
                 width = if (isSelected) 1.8.dp else 1.dp,
-                color = if (isSelected) StudyAmberAccent else Color(0x30DFB36E),
+                color = if (isSelected) Color(0xFFFFB703) else Color(0xFF26354E),
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable { onClick() }
@@ -316,8 +317,8 @@ fun MoveSuggestionCard(
                 Text(
                     text = suggestion.notation,
                     fontSize = 12.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = StudyParchmentCream
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color(0xFFF8FAFC)
                 )
             }
 
@@ -343,7 +344,7 @@ fun MoveSuggestionCard(
                 text = suggestion.explanation,
                 fontSize = 9.5.sp,
                 lineHeight = 12.5.sp,
-                color = Color(0xFFC7BBAE),
+                color = Color(0xFF94A3B8),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -369,8 +370,8 @@ fun MoveExplanationCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xF0120D09))
-            .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(12.dp))
+            .background(Color(0xFF0F1726))
+            .border(1.dp, Color(0xFF26354E), RoundedCornerShape(12.dp))
             .padding(10.dp)
     ) {
         Row(
@@ -384,8 +385,8 @@ fun MoveExplanationCard(
                 modifier = Modifier
                     .size(42.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0x33000000))
-                    .border(0.8.dp, Color(0x25DFB36E), RoundedCornerShape(8.dp))
+                    .background(Color(0xFF192538))
+                    .border(0.8.dp, Color(0xFF2C3C56), RoundedCornerShape(8.dp))
             ) {
                 PieceView(
                     type = suggestion.piece,
@@ -405,7 +406,7 @@ fun MoveExplanationCard(
                         fontSize = 9.5.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 0.8.sp,
-                        color = StudyAmberAccent
+                        color = Color(0xFFFFB703)
                     )
                 }
 
@@ -413,7 +414,7 @@ fun MoveExplanationCard(
                     text = suggestion.notation,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = StudyParchmentCream
+                    color = Color(0xFFF8FAFC)
                 )
 
                 Spacer(modifier = Modifier.height(2.dp))
@@ -422,7 +423,7 @@ fun MoveExplanationCard(
                     text = suggestion.explanation,
                     fontSize = 10.5.sp,
                     lineHeight = 14.sp,
-                    color = Color(0xFFC7BBAE),
+                    color = Color(0xFF94A3B8),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -443,8 +444,8 @@ fun MoveExplanationCard(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0x22DFB36E))
-                    .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(8.dp))
+                    .background(Color(0x22FFB703))
+                    .border(1.dp, Color(0x44FFB703), RoundedCornerShape(8.dp))
                     .padding(horizontal = 10.dp, vertical = 6.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -453,13 +454,14 @@ fun MoveExplanationCard(
                         text = evalText,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Black,
-                        color = StudyParchmentCream
+                        color = Color(0xFFF8FAFC)
                     )
                     Text(
-                        text = "Evaluation",
+                        text = "EVAL",
                         fontSize = 8.5.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFFAFA293)
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.8.sp,
+                        color = Color(0xFFFFB703)
                     )
                 }
             }

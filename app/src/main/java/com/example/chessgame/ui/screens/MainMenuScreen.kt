@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,12 +39,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Screen 2: Game Home Screen
- * Redesigned from a standard menu into a real Game Home Screen:
- * - Top Player Profile Header: Avatar, Level Badge, XP progress bar, Quick stats (Wins, Win Rate %, Streak)
- * - Main Play Area: Visually dominant Primary CTA (Play vs AI), Local 2 Player, and Daily Tactical Challenge
- * - Game Hub: Analyse Game, Theme Room, Honors & Achievements, How to Play, Settings
- * - Full Android safe area insets handling (WindowInsets.systemBars)
+ * Screen 2: Game Lobby (Main Menu)
+ * Redesigned from scratch as a true AAA Mobile Game Hub:
+ * - High-contrast obsidian slate surfaces with cyber-gold highlights
+ * - Top Gamer HUD: Level badge, animated XP bar, win stats, and streak flame
+ * - Dominant Hero Play Banner: "PLAY VS AI" with glowing gold border & tactile play trigger
+ * - Secondary Game Modes: Local 2-Player duel & Daily Puzzle with XP rewards
+ * - 4-Tile Game Utility Hub: Analysis Lab, Theme Vault, Trophy Hall, Battle Academy
+ * - Quick Settings Bar with instant sound/game configuration
  */
 @Composable
 fun MainMenuScreen(
@@ -64,54 +65,52 @@ fun MainMenuScreen(
         profile = PlayerProgressionManager.getProfile()
     }
 
-    // Entrance animations
-    val bgAlpha = remember { Animatable(0f) }
+    // Smooth Entrance Animations
     val heroAlpha = remember { Animatable(0f) }
-    val heroScale = remember { Animatable(0.96f) }
+    val heroScale = remember { Animatable(0.95f) }
     val contentAlpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        launch { bgAlpha.animateTo(1f, animationSpec = tween(400)) }
-        launch { heroAlpha.animateTo(1f, animationSpec = tween(500)) }
-        launch { heroScale.animateTo(1f, animationSpec = tween(550, easing = FastOutSlowInEasing)) }
+        launch { heroAlpha.animateTo(1f, animationSpec = tween(400)) }
+        launch { heroScale.animateTo(1f, animationSpec = tween(450, easing = FastOutSlowInEasing)) }
         launch {
-            delay(120)
-            contentAlpha.animateTo(1f, animationSpec = tween(450))
+            delay(100)
+            contentAlpha.animateTo(1f, animationSpec = tween(400))
         }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF080A0D))
+            .background(Color(0xFF070A10))
     ) {
-        // LAYER 1: Atmospheric Room Background
+        // LAYER 1: ATMOSPHERIC GAME LOBBY BACKGROUND
         Image(
             painter = painterResource(id = R.drawable.bg_main_menu),
-            contentDescription = "Study Background",
+            contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxSize()
-                .graphicsLayer { alpha = bgAlpha.value }
+                .graphicsLayer { alpha = 0.35f }
         )
 
-        // LAYER 1.5: Radial Darkening Scrim
+        // Radial obsidian darkening vignette
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
-                            Color(0xCC07090C),
-                            Color(0x7506080A),
-                            Color(0x20050709)
+                            Color(0x990A0F1D),
+                            Color(0xEE070A10),
+                            Color(0xFF070A10)
                         ),
-                        radius = 1250f
+                        radius = 1200f
                     )
                 )
         )
 
-        // LAYER 2: Native Compose UI with safe area insets
+        // LAYER 2: NATIVE COMPOSE GAME UI
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -121,21 +120,21 @@ fun MainMenuScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 18.dp, vertical = 6.dp),
+                    .padding(horizontal = 18.dp, vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // ==========================================
-                // 1. TOP SECTION: PLAYER IDENTITY & MOTTO
+                // 1. TOP SECTION: GAMER PROFILE HUD & TITLE
                 // ==========================================
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .widthIn(max = 420.dp),
+                        .widthIn(max = 440.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Top Player Profile Bar
-                    PlayerHomeProfileCard(
+                    // Top Gamer HUD Card
+                    GamerProfileHudCard(
                         profile = profile,
                         onClick = {
                             SoundManager.playClick()
@@ -143,84 +142,48 @@ fun MainMenuScreen(
                         }
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                    // Subtle Motto Quotes
+                    // Grand Title Branding with Golden Crown
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Column(horizontalAlignment = Alignment.Start) {
-                            Text(
-                                text = "SAME GAME.\nNEW STORIES.",
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = 1.4.sp,
-                                lineHeight = 10.sp,
-                                color = Color(0x99B8AEA0)
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Box(
-                                modifier = Modifier
-                                    .width(18.dp)
-                                    .height(1.dp)
-                                    .background(Color(0x40DFB36E))
-                            )
-                        }
-
-                        // Compact Center Knight Branding
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_menu_knight),
-                                contentDescription = "Chess Knight",
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Text(
-                                text = "CHESS",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 4.sp,
-                                color = Color(0xFFF3E2C4),
-                                fontFamily = FontFamily.Serif
-                            )
-                        }
-
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text(
-                                text = "DISCIPLINE\nCREATES FREEDOM.",
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = 1.4.sp,
-                                lineHeight = 10.sp,
-                                color = Color(0x99B8AEA0),
-                                textAlign = TextAlign.End
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Box(
-                                modifier = Modifier
-                                    .width(18.dp)
-                                    .height(1.dp)
-                                    .background(Color(0x40DFB36E))
-                            )
-                        }
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_crown_gold),
+                            contentDescription = "Crown",
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "CHESS",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 5.sp,
+                            fontFamily = GameFont,
+                            color = Color(0xFFF8FAFC)
+                        )
                     }
+
+                    Text(
+                        text = "THE ULTIMATE BATTLE OF MINDS",
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 2.sp,
+                        fontFamily = GameFont,
+                        color = Color(0xFFFFB703)
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // ==========================================
-                // 2. MAIN PLAY AREA (Dominant Primary CTA)
+                // 2. MAIN PLAY AREA (Dominant Game Mode Cards)
                 // ==========================================
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .widthIn(max = 420.dp)
+                        .widthIn(max = 440.dp)
                         .graphicsLayer {
                             alpha = heroAlpha.value
                             scaleX = heroScale.value
@@ -229,28 +192,29 @@ fun MainMenuScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // HERO CTA: PLAY VS AI (Visually dominant, glowing gold/amber gradient)
-                    HeroPlayCard(
+                    // HERO CTA: PLAY VS AI (Glowing Arcade Grandmaster Card)
+                    HeroGameModeCard(
                         title = "PLAY VS AI",
-                        subtitle = "Tactical Match • 4 Engine Difficulties",
-                        badge = "PRIMARY MATCH",
+                        subtitle = "4 Ranked Boss Engines • Tactical Combat",
+                        badge = "RANKED MATCH",
                         onClick = {
                             SoundManager.playClick()
                             onPlayAI()
                         }
                     )
 
-                    // Secondary Play Row: Local 2 Player & Daily Challenge
+                    // Secondary Play Row: Local 2-Player & Daily Puzzle
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        // Local 2 Player Card
-                        SubPlayCard(
+                        // Local 2-Player Pass & Play
+                        SecondaryGameModeCard(
                             title = "Local 2 Player",
-                            subtitle = "One board. Two minds.",
-                            badge = "PASS & PLAY",
-                            icon = "♟️",
+                            subtitle = "One Device • Pass & Play",
+                            badge = "OFFLINE DUEL",
+                            badgeColor = Color(0xFF38BDF8),
+                            icon = "⚔️",
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 SoundManager.playClick()
@@ -258,12 +222,12 @@ fun MainMenuScreen(
                             }
                         )
 
-                        // Daily Challenge Card
-                        SubPlayCard(
+                        // Daily Tactical Challenge
+                        SecondaryGameModeCard(
                             title = "Daily Puzzle",
-                            subtitle = "Tactical mate in 1 or 2",
-                            badge = "+75 XP",
-                            badgeColor = Color(0xFF26C6DA),
+                            subtitle = "Tactical Mate Mission",
+                            badge = "+75 XP BONUS",
+                            badgeColor = Color(0xFF00E5FF),
                             icon = "🧩",
                             modifier = Modifier.weight(1f),
                             onClick = {
@@ -274,15 +238,15 @@ fun MainMenuScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // ==========================================
-                // 3. GAME HUB UTILITIES (Compact 2x2 Grid + Full Settings)
+                // 3. GAME UTILITIES HUB (4 Interactive Tiles)
                 // ==========================================
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .widthIn(max = 420.dp)
+                        .widthIn(max = 440.dp)
                         .graphicsLayer { alpha = contentAlpha.value },
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -290,10 +254,11 @@ fun MainMenuScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        GameHubPill(
-                            title = "Analyse Game",
-                            subtitle = "Accuracy & mistakes",
+                        GameHubActionTile(
+                            title = "Analysis Lab",
+                            subtitle = "Blunders & Accuracy",
                             iconRes = R.drawable.ic_menu_analyse,
+                            accentColor = Color(0xFF00E5FF),
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 SoundManager.playClick()
@@ -301,10 +266,11 @@ fun MainMenuScreen(
                             }
                         )
 
-                        GameHubPill(
+                        GameHubActionTile(
                             title = "Theme Vault",
-                            subtitle = "Boards & pieces",
+                            subtitle = "Custom Boards & Pieces",
                             iconRes = R.drawable.ic_menu_themes,
+                            accentColor = Color(0xFFFFB703),
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 SoundManager.playClick()
@@ -317,10 +283,11 @@ fun MainMenuScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        GameHubPill(
-                            title = "Honors & Stats",
-                            subtitle = "${profile.achievements.count { it.isUnlocked }} of ${profile.achievements.size} trophies",
+                        GameHubActionTile(
+                            title = "Trophy Hall",
+                            subtitle = "${profile.achievements.count { it.isUnlocked }} of ${profile.achievements.size} Unlocked",
                             icon = "🏆",
+                            accentColor = Color(0xFFFFD166),
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 SoundManager.playClick()
@@ -328,10 +295,11 @@ fun MainMenuScreen(
                             }
                         )
 
-                        GameHubPill(
-                            title = "How to Play",
-                            subtitle = "Illustrated rules",
+                        GameHubActionTile(
+                            title = "Battle Academy",
+                            subtitle = "Rules & Tactics",
                             iconRes = R.drawable.ic_menu_how_to_play,
+                            accentColor = Color(0xFF10B981),
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 SoundManager.playClick()
@@ -340,14 +308,14 @@ fun MainMenuScreen(
                         )
                     }
 
-                    // Settings Quick Bar
+                    // Settings & Audio Quick Bar
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(44.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0x35160F0B))
-                            .border(1.dp, Color(0x25DFB36E), RoundedCornerShape(12.dp))
+                            .height(46.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0xFF101726))
+                            .border(1.dp, Color(0xFF243248), RoundedCornerShape(14.dp))
                             .clickable {
                                 SoundManager.playClick()
                                 onOpenSettings()
@@ -362,7 +330,7 @@ fun MainMenuScreen(
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 Image(
                                     painter = painterResource(id = R.drawable.ic_menu_settings),
@@ -370,17 +338,20 @@ fun MainMenuScreen(
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Text(
-                                    text = "Game Settings & Audio",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = StudyParchmentCream
+                                    text = "Game Settings & Audio Controls",
+                                    fontSize = 12.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = GameFont,
+                                    color = Color(0xFFF1F5F9)
                                 )
                             }
                             Text(
-                                text = "Configure →",
+                                text = "CONFIGURE ▶",
                                 fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = StudyAmberAccent
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp,
+                                fontFamily = GameFont,
+                                color = Color(0xFFFFB703)
                             )
                         }
                     }
@@ -392,18 +363,19 @@ fun MainMenuScreen(
                 // 4. FOOTER STATUS
                 // ==========================================
                 Text(
-                    text = "100% OFFLINE  •  FIDE RULES  •  LOCAL PROGRESSION",
-                    fontSize = 8.5.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    text = "100% OFFLINE • FIDE RULES • LOCAL PROGRESSION",
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
                     letterSpacing = 1.8.sp,
-                    color = Color(0x77D5C7B2),
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    fontFamily = GameFont,
+                    color = Color(0xFF64748B),
+                    modifier = Modifier.padding(bottom = 6.dp)
                 )
             }
         }
 
         // ==========================================
-        // DIALOGS
+        // DIALOGS & OVERLAYS
         // ==========================================
         if (showProfileDialog) {
             PlayerProfileDialog(
@@ -429,10 +401,10 @@ fun MainMenuScreen(
 }
 
 /**
- * Top Player Profile Card displaying Avatar, Level, XP bar, and Quick Stats.
+ * Top Gamer HUD Card displaying Avatar, Rank Crest, Level, XP Bar, and Stat Badges.
  */
 @Composable
-private fun PlayerHomeProfileCard(
+private fun GamerProfileHudCard(
     profile: PlayerProfile,
     onClick: () -> Unit
 ) {
@@ -444,48 +416,50 @@ private fun PlayerHomeProfileCard(
         modifier = Modifier
             .fillMaxWidth()
             .scale(scale)
-            .shadow(8.dp, RoundedCornerShape(16.dp), spotColor = Color(0x66000000))
-            .clip(RoundedCornerShape(16.dp))
+            .shadow(12.dp, RoundedCornerShape(18.dp), spotColor = Color(0xFF000000))
+            .clip(RoundedCornerShape(18.dp))
             .background(
                 Brush.linearGradient(
-                    listOf(Color(0xDD2A1C12), Color(0xDD1A110B))
+                    listOf(Color(0xFF131C2D), Color(0xFF0E1624))
                 )
             )
-            .border(1.2.dp, Color(0x45DFB36E), RoundedCornerShape(16.dp))
+            .border(1.5.dp, Color(0xFF2A3A54), RoundedCornerShape(18.dp))
             .clickable(interactionSource = interactionSource, indication = null) { onClick() }
-            .padding(horizontal = 14.dp, vertical = 10.dp)
+            .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Level Plinth Seal
+            // Level Hexagon / Crest Badge
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(14.dp))
                     .background(
                         Brush.radialGradient(
-                            listOf(StudyAmberAccent, Color(0xFF8B5E2B))
+                            listOf(Color(0xFFFFD54F), Color(0xFFFF8F00))
                         )
                     )
-                    .border(1.dp, Color(0xFFF7EFE4), RoundedCornerShape(12.dp)),
+                    .border(1.5.dp, Color(0xFFFFF9C4), RoundedCornerShape(14.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "LVL",
-                        fontSize = 8.sp,
+                        fontSize = 8.5.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.sp,
-                        color = Color(0xFF2A1B0E)
+                        fontFamily = GameFont,
+                        color = Color(0xFF1E1304)
                     )
                     Text(
                         text = "%02d".format(profile.level),
-                        fontSize = 15.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Black,
-                        color = Color(0xFF140D07)
+                        fontFamily = GameFont,
+                        color = Color(0xFF0F0A02)
                     )
                 }
             }
@@ -500,93 +474,103 @@ private fun PlayerHomeProfileCard(
                     Column {
                         Text(
                             text = profile.playerName,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = StudyParchmentCream
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Black,
+                            fontFamily = GameFont,
+                            color = Color(0xFFF8FAFC)
                         )
                         Text(
-                            text = profile.title,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = StudyAmberAccent
+                            text = profile.title.uppercase(),
+                            fontSize = 9.5.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = 1.sp,
+                            fontFamily = GameFont,
+                            color = Color(0xFFFFB703)
                         )
                     }
 
-                    // Quick Stats Pills (Wins & Win Rate)
+                    // Stat Badges
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        // Wins Badge
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0x35588157))
-                                .border(0.8.dp, Color(0x66588157), RoundedCornerShape(6.dp))
+                                .background(Color(0x2210B981))
+                                .border(0.8.dp, Color(0x6610B981), RoundedCornerShape(6.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = "${profile.wins}W",
+                                text = "🏆 ${profile.wins}W",
                                 fontSize = 9.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF8DA378)
+                                fontFamily = GameFont,
+                                color = Color(0xFF10B981)
                             )
                         }
 
+                        // Win Rate Badge
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0x35DFB36E))
-                                .border(0.8.dp, Color(0x66DFB36E), RoundedCornerShape(6.dp))
+                                .background(Color(0x22FFB703))
+                                .border(0.8.dp, Color(0x66FFB703), RoundedCornerShape(6.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = "${profile.winRate}%",
+                                text = "⚡ ${profile.winRate}%",
                                 fontSize = 9.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = StudyAmberAccent
+                                fontFamily = GameFont,
+                                color = Color(0xFFFFB703)
                             )
                         }
 
+                        // Streak Badge
                         if (profile.currentStreak >= 2) {
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(0x35E5A93C))
-                                    .border(0.8.dp, Color(0x66E5A93C), RoundedCornerShape(6.dp))
+                                    .background(Color(0x25EF4444))
+                                    .border(0.8.dp, Color(0x66EF4444), RoundedCornerShape(6.dp))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = "${profile.currentStreak}🔥",
+                                    text = "🔥 ${profile.currentStreak}",
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFE5A93C)
+                                    fontFamily = GameFont,
+                                    color = Color(0xFFFF5252)
                                 )
                             }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(5.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 // XP Progress Bar
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(5.dp)
+                        .height(6.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF140D09))
+                        .background(Color(0xFF090D14))
+                        .border(0.5.dp, Color(0xFF1E293B), CircleShape)
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
-                            .fillMaxWidth(profile.levelProgress.coerceIn(0.05f, 1f))
+                            .fillMaxWidth(profile.levelProgress.coerceIn(0.06f, 1f))
                             .clip(CircleShape)
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFFDFB36E), Color(0xFFF3D58C))
+                                    listOf(Color(0xFFFFB703), Color(0xFFFFD166), Color(0xFF00E5FF))
                                 )
                             )
                     )
                 }
 
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(3.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -595,13 +579,16 @@ private fun PlayerHomeProfileCard(
                     Text(
                         text = "${profile.currentXp} / ${profile.xpForNextLevel} XP",
                         fontSize = 9.sp,
-                        color = Color(0xFF9E8F7F)
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = GameFont,
+                        color = Color(0xFF94A3B8)
                     )
                     Text(
-                        text = "Profile & Honors ➔",
+                        text = "PROFILE & HONORS ▶",
                         fontSize = 9.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = StudyAmberAccent
+                        fontWeight = FontWeight.Black,
+                        fontFamily = GameFont,
+                        color = Color(0xFFFFB703)
                     )
                 }
             }
@@ -610,10 +597,10 @@ private fun PlayerHomeProfileCard(
 }
 
 /**
- * Hero Play Card: The visually dominant CTA for starting a match.
+ * Hero Game Mode Card: The dominant Arcade Match CTA.
  */
 @Composable
-private fun HeroPlayCard(
+private fun HeroGameModeCard(
     title: String,
     subtitle: String,
     badge: String,
@@ -623,11 +610,10 @@ private fun HeroPlayCard(
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.97f else 1f, label = "press")
 
-    // Subtle pulsing amber border glow
     val infiniteTransition = rememberInfiniteTransition(label = "hero_glow")
     val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.55f,
-        targetValue = 0.95f,
+        initialValue = 0.6f,
+        targetValue = 1.0f,
         animationSpec = infiniteRepeatable(
             animation = tween(1200, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -638,16 +624,16 @@ private fun HeroPlayCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(86.dp)
+            .height(90.dp)
             .scale(scale)
-            .shadow(16.dp, RoundedCornerShape(20.dp), spotColor = Color(0xAA000000))
+            .shadow(16.dp, RoundedCornerShape(20.dp), spotColor = Color(0xFFFFB703))
             .clip(RoundedCornerShape(20.dp))
             .background(
                 Brush.horizontalGradient(
                     listOf(
-                        Color(0xFF382516),
-                        Color(0xFF28180E),
-                        Color(0xFF1E1008)
+                        Color(0xFF22160C),
+                        Color(0xFF1B1812),
+                        Color(0xFF101726)
                     )
                 )
             )
@@ -655,9 +641,9 @@ private fun HeroPlayCard(
                 width = 2.dp,
                 brush = Brush.linearGradient(
                     listOf(
-                        StudyAmberAccent.copy(alpha = glowAlpha),
-                        Color(0xFF946830).copy(alpha = glowAlpha),
-                        StudyAmberAccent.copy(alpha = glowAlpha)
+                        Color(0xFFFFB703).copy(alpha = glowAlpha),
+                        Color(0xFFFFD166).copy(alpha = glowAlpha),
+                        Color(0xFFFF9800).copy(alpha = glowAlpha)
                     )
                 ),
                 shape = RoundedCornerShape(20.dp)
@@ -675,23 +661,23 @@ private fun HeroPlayCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Golden Knight Play Icon Shield
+                // Golden Knight Badge Shield
                 Box(
                     modifier = Modifier
-                        .size(52.dp)
+                        .size(54.dp)
                         .clip(CircleShape)
                         .background(
                             Brush.radialGradient(
-                                listOf(StudyAmberAccent, Color(0xFF8A5D29))
+                                listOf(Color(0xFFFFD54F), Color(0xFFFF8F00))
                             )
                         )
-                        .border(1.5.dp, Color(0xFFFFF2D6), CircleShape),
+                        .border(1.5.dp, Color(0xFFFFF9C4), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_menu_play_ai),
                         contentDescription = "Play AI",
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(30.dp)
                     )
                 }
 
@@ -699,15 +685,16 @@ private fun HeroPlayCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0x35DFB36E))
-                            .padding(horizontal = 6.dp, vertical = 1.dp)
+                            .background(Color(0x35FFB703))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = badge,
                             fontSize = 8.5.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 1.2.sp,
-                            color = StudyAmberAccent
+                            fontFamily = GameFont,
+                            color = Color(0xFFFFB703)
                         )
                     }
 
@@ -718,30 +705,36 @@ private fun HeroPlayCard(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.5.sp,
-                        color = StudyParchmentCream
+                        fontFamily = GameFont,
+                        color = Color(0xFFF8FAFC)
                     )
 
                     Text(
                         text = subtitle,
-                        fontSize = 10.5.sp,
-                        color = Color(0xFFC7B7A5)
+                        fontSize = 11.sp,
+                        fontFamily = GameFont,
+                        color = Color(0xFF94A3B8)
                     )
                 }
             }
 
-            // Right Play Arrow Pill
+            // Right Play Button Pill
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
-                    .background(StudyAmberAccent)
-                    .border(1.dp, Color(0xFFFFF2D6), CircleShape),
+                    .background(
+                        Brush.radialGradient(
+                            listOf(Color(0xFFFFD54F), Color(0xFFFF8F00))
+                        )
+                    )
+                    .border(1.dp, Color(0xFFFFF9C4), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "▶",
-                    fontSize = 14.sp,
-                    color = Color(0xFF1B1107),
+                    fontSize = 15.sp,
+                    color = Color(0xFF1E1304),
                     modifier = Modifier.offset(x = 1.dp)
                 )
             }
@@ -750,14 +743,14 @@ private fun HeroPlayCard(
 }
 
 /**
- * Sub Play Card for Local 2 Player and Daily Challenge.
+ * Secondary Game Mode Card for Local 2-Player and Daily Puzzle.
  */
 @Composable
-private fun SubPlayCard(
+private fun SecondaryGameModeCard(
     title: String,
     subtitle: String,
     badge: String,
-    badgeColor: Color = StudyAmberAccent,
+    badgeColor: Color,
     icon: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
@@ -768,18 +761,18 @@ private fun SubPlayCard(
 
     Box(
         modifier = modifier
-            .height(88.dp)
+            .height(92.dp)
             .scale(scale)
-            .shadow(6.dp, RoundedCornerShape(16.dp), spotColor = Color(0x66000000))
+            .shadow(8.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFF000000))
             .clip(RoundedCornerShape(16.dp))
             .background(
                 Brush.verticalGradient(
-                    listOf(Color(0xEE241911), Color(0xEE160F09))
+                    listOf(Color(0xFF141C2B), Color(0xFF0F1726))
                 )
             )
-            .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(16.dp))
+            .border(1.2.dp, Color(0xFF26354E), RoundedCornerShape(16.dp))
             .clickable(interactionSource = interactionSource, indication = null) { onClick() }
-            .padding(10.dp),
+            .padding(12.dp),
         contentAlignment = Alignment.CenterStart
     ) {
         Column(
@@ -791,17 +784,19 @@ private fun SubPlayCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = icon, fontSize = 20.sp)
+                Text(text = icon, fontSize = 22.sp)
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(5.dp))
                         .background(badgeColor.copy(alpha = 0.2f))
-                        .padding(horizontal = 5.dp, vertical = 1.dp)
+                        .border(0.8.dp, badgeColor.copy(alpha = 0.5f), RoundedCornerShape(5.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
                         text = badge,
                         fontSize = 8.5.sp,
                         fontWeight = FontWeight.Black,
+                        fontFamily = GameFont,
                         color = badgeColor
                     )
                 }
@@ -810,14 +805,16 @@ private fun SubPlayCard(
             Column {
                 Text(
                     text = title,
-                    fontSize = 13.5.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = StudyParchmentCream
+                    fontFamily = GameFont,
+                    color = Color(0xFFF8FAFC)
                 )
                 Text(
                     text = subtitle,
                     fontSize = 9.5.sp,
-                    color = Color(0xFFAFA293),
+                    fontFamily = GameFont,
+                    color = Color(0xFF94A3B8),
                     maxLines = 1
                 )
             }
@@ -826,14 +823,15 @@ private fun SubPlayCard(
 }
 
 /**
- * Compact Game Hub Pill Card.
+ * Compact Game Hub Action Tile (Analysis, Themes, Honors, Academy).
  */
 @Composable
-private fun GameHubPill(
+private fun GameHubActionTile(
     title: String,
     subtitle: String,
     iconRes: Int? = null,
     icon: String? = null,
+    accentColor: Color = Color(0xFFFFB703),
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -843,18 +841,18 @@ private fun GameHubPill(
 
     Box(
         modifier = modifier
-            .height(56.dp)
+            .height(58.dp)
             .scale(scale)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0x301E140D))
-            .border(1.dp, Color(0x28DFB36E), RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFF111827))
+            .border(1.dp, Color(0xFF222E42), RoundedCornerShape(14.dp))
             .clickable(interactionSource = interactionSource, indication = null) { onClick() }
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .padding(horizontal = 10.dp, vertical = 8.dp),
         contentAlignment = Alignment.CenterStart
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(9.dp)
         ) {
             if (iconRes != null) {
                 Image(
@@ -863,20 +861,22 @@ private fun GameHubPill(
                     modifier = Modifier.size(22.dp)
                 )
             } else if (icon != null) {
-                Text(text = icon, fontSize = 18.sp)
+                Text(text = icon, fontSize = 20.sp)
             }
 
             Column {
                 Text(
                     text = title,
-                    fontSize = 12.sp,
+                    fontSize = 12.5.sp,
                     fontWeight = FontWeight.Bold,
-                    color = StudyParchmentCream
+                    fontFamily = GameFont,
+                    color = Color(0xFFF8FAFC)
                 )
                 Text(
                     text = subtitle,
                     fontSize = 9.5.sp,
-                    color = Color(0xFFA59786),
+                    fontFamily = GameFont,
+                    color = Color(0xFF94A3B8),
                     maxLines = 1
                 )
             }

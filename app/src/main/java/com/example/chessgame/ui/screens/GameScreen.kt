@@ -436,11 +436,11 @@ fun GameScreen(
                         text = "←",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
-                        color = StudyParchmentCream
+                        color = Color(0xFFF8FAFC)
                     )
                 }
 
-                // Center: Gold Knight + CHESS + CLASSIC STRATEGY. REIMAGINED.
+                // Center: Gold Knight + CHESS + RATED ARENA
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
@@ -454,16 +454,17 @@ fun GameScreen(
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 3.sp,
-                            fontFamily = FontFamily.Serif,
-                            color = Color(0xFFF2E9DE)
+                            fontFamily = GameFont,
+                            color = Color(0xFFF8FAFC)
                         )
                     }
                     Text(
-                        text = "CLASSIC STRATEGY. REIMAGINED.",
+                        text = if (isAIMode) "RATED ARENA • VS ${aiDifficulty.name}" else "LOCAL ARENA • 2 PLAYER DUEL",
                         fontSize = 8.5.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.1.sp,
-                        color = StudyAmberAccent
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.2.sp,
+                        fontFamily = GameFont,
+                        color = Color(0xFFFFB703)
                     )
                 }
 
@@ -545,23 +546,23 @@ fun GameScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp)
-                        .shadow(if (isYouActive) 6.dp else 1.dp, RoundedCornerShape(10.dp), spotColor = Color(0x66DFB36E))
-                        .clip(RoundedCornerShape(10.dp))
+                        .shadow(if (isYouActive) 8.dp else 1.dp, RoundedCornerShape(12.dp), spotColor = if (isYouActive) Color(0xFF00E5FF) else Color.Black)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(
                             if (isYouActive) {
                                 Brush.verticalGradient(
-                                    listOf(Color(0xE6261C14), Color(0xFA1A110B))
+                                    listOf(Color(0xFF132338), Color(0xFF0F1726))
                                 )
                             } else {
                                 Brush.verticalGradient(
-                                    listOf(Color(0xCC16100B), Color(0xCC16100B))
+                                    listOf(Color(0xFF0D1420), Color(0xFF0D1420))
                                 )
                             }
                         )
                         .border(
-                            width = if (isYouActive) 1.5.dp else 1.dp,
-                            color = if (isYouActive) StudyAmberAccent else Color(0x25DFB36E),
-                            shape = RoundedCornerShape(10.dp)
+                            width = if (isYouActive) 1.8.dp else 1.dp,
+                            color = if (isYouActive) Color(0xFF00E5FF) else Color(0xFF1E2B3E),
+                            shape = RoundedCornerShape(12.dp)
                         )
                         .padding(horizontal = 8.dp, vertical = 6.dp),
                     contentAlignment = Alignment.CenterStart
@@ -576,10 +577,10 @@ fun GameScreen(
                             modifier = Modifier
                                 .size(34.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0x33FFFFFF))
-                                .border(0.8.dp, Color(0x35DFB36E), RoundedCornerShape(8.dp))
+                                .background(Color(0xFF1A2638))
+                                .border(0.8.dp, if (isYouActive) Color(0xFF00E5FF) else Color(0xFF2C3C56), RoundedCornerShape(8.dp))
                         ) {
-                            Text(text = "👤", fontSize = 16.sp)
+                            Text(text = "👑", fontSize = 16.sp)
                         }
 
                         Spacer(modifier = Modifier.width(7.dp))
@@ -590,7 +591,8 @@ fun GameScreen(
                                     text = if (isAIMode) "You" else player1Name,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = StudyParchmentCream,
+                                    fontFamily = GameFont,
+                                    color = Color(0xFFF8FAFC),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -600,7 +602,8 @@ fun GameScreen(
                                         text = "+$youAdvantage",
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Black,
-                                        color = StudyAmberAccent
+                                        fontFamily = GameFont,
+                                        color = Color(0xFFFFB703)
                                     )
                                 }
                             }
@@ -608,9 +611,9 @@ fun GameScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(
                                     modifier = Modifier
-                                        .size(6.5.dp)
+                                        .size(7.dp)
                                         .clip(CircleShape)
-                                        .background(if (youColor == PieceColor.WHITE) Color.White else Color(0xFF222222))
+                                        .background(if (youColor == PieceColor.WHITE) Color.White else Color(0xFF1E293B))
                                         .border(0.5.dp, Color.Gray, CircleShape)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -618,7 +621,8 @@ fun GameScreen(
                                     text = if (youInCheck) "CHECK!" else youColor.name.lowercase().replaceFirstChar { it.uppercase() },
                                     fontSize = 9.5.sp,
                                     fontWeight = if (youInCheck) FontWeight.Black else FontWeight.Normal,
-                                    color = if (youInCheck) Color(0xFFFF6B6B) else Color(0xFFAFA293)
+                                    fontFamily = GameFont,
+                                    color = if (youInCheck) Color(0xFFFF3366) else Color(0xFF94A3B8)
                                 )
                             }
                         }
@@ -635,21 +639,31 @@ fun GameScreen(
                     modifier = Modifier
                         .width(92.dp)
                         .height(52.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xCC16100B))
-                        .border(1.dp, Color(0x25DFB36E), RoundedCornerShape(10.dp))
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF0A0F1A))
+                        .border(1.dp, Color(0xFF1E2B3E), RoundedCornerShape(12.dp))
                         .padding(horizontal = 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "⏱", fontSize = 14.sp)
-                        Spacer(modifier = Modifier.width(5.dp))
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "⏱", fontSize = 12.sp)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = clockStr,
+                                fontSize = 14.5.sp,
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color(0xFFF8FAFC)
+                            )
+                        }
                         Text(
-                            text = clockStr,
-                            fontSize = 14.5.sp,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = StudyParchmentCream
+                            text = "MOVE ${gameState.history.size / 2 + 1}",
+                            fontSize = 8.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = GameFont,
+                            letterSpacing = 0.8.sp,
+                            color = Color(0xFFFFB703)
                         )
                     }
                 }
@@ -659,23 +673,23 @@ fun GameScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp)
-                        .shadow(if (isOppActive) 6.dp else 1.dp, RoundedCornerShape(10.dp), spotColor = Color(0x66DFB36E))
-                        .clip(RoundedCornerShape(10.dp))
+                        .shadow(if (isOppActive) 8.dp else 1.dp, RoundedCornerShape(12.dp), spotColor = if (isOppActive) Color(0xFFFFB703) else Color.Black)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(
                             if (isOppActive) {
                                 Brush.verticalGradient(
-                                    listOf(Color(0xE6261C14), Color(0xFA1A110B))
+                                    listOf(Color(0xFF24180E), Color(0xFF16100B))
                                 )
                             } else {
                                 Brush.verticalGradient(
-                                    listOf(Color(0xCC16100B), Color(0xCC16100B))
+                                    listOf(Color(0xFF0D1420), Color(0xFF0D1420))
                                 )
                             }
                         )
                         .border(
-                            width = if (isOppActive) 1.5.dp else 1.dp,
-                            color = if (isOppActive) StudyAmberAccent else Color(0x25DFB36E),
-                            shape = RoundedCornerShape(10.dp)
+                            width = if (isOppActive) 1.8.dp else 1.dp,
+                            color = if (isOppActive) Color(0xFFFFB703) else Color(0xFF1E2B3E),
+                            shape = RoundedCornerShape(12.dp)
                         )
                         .padding(horizontal = 8.dp, vertical = 6.dp),
                     contentAlignment = Alignment.CenterStart
@@ -690,10 +704,10 @@ fun GameScreen(
                             modifier = Modifier
                                 .size(34.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0x33FFFFFF))
-                                .border(0.8.dp, Color(0x35DFB36E), RoundedCornerShape(8.dp))
+                                .background(Color(0xFF1A2638))
+                                .border(0.8.dp, if (isOppActive) Color(0xFFFFB703) else Color(0xFF2C3C56), RoundedCornerShape(8.dp))
                         ) {
-                            Text(text = if (isAIMode) "🤖" else "👥", fontSize = 16.sp)
+                            Text(text = if (isAIMode) "🤖" else "⚔️", fontSize = 16.sp)
                         }
 
                         Spacer(modifier = Modifier.width(7.dp))
@@ -704,7 +718,8 @@ fun GameScreen(
                                     text = if (isAIMode) "AI (${aiDifficulty.name.take(3)})" else player2Name,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = StudyParchmentCream,
+                                    fontFamily = GameFont,
+                                    color = Color(0xFFF8FAFC),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -714,7 +729,8 @@ fun GameScreen(
                                         text = "+$oppAdvantage",
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Black,
-                                        color = StudyAmberAccent
+                                        fontFamily = GameFont,
+                                        color = Color(0xFFFFB703)
                                     )
                                 }
                             }
@@ -722,9 +738,9 @@ fun GameScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(
                                     modifier = Modifier
-                                        .size(6.5.dp)
+                                        .size(7.dp)
                                         .clip(CircleShape)
-                                        .background(if (oppColor == PieceColor.WHITE) Color.White else Color(0xFF222222))
+                                        .background(if (oppColor == PieceColor.WHITE) Color.White else Color(0xFF1E293B))
                                         .border(0.5.dp, Color.Gray, CircleShape)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -733,14 +749,16 @@ fun GameScreen(
                                         text = "Thinking...",
                                         fontSize = 9.5.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = StudyAmberAccent
+                                        fontFamily = GameFont,
+                                        color = Color(0xFFFFB703)
                                     )
                                 } else {
                                     Text(
                                         text = if (oppInCheck) "CHECK!" else oppColor.name.lowercase().replaceFirstChar { it.uppercase() },
                                         fontSize = 9.5.sp,
                                         fontWeight = if (oppInCheck) FontWeight.Black else FontWeight.Normal,
-                                        color = if (oppInCheck) Color(0xFFFF6B6B) else Color(0xFFAFA293)
+                                        fontFamily = GameFont,
+                                        color = if (oppInCheck) Color(0xFFFF3366) else Color(0xFF94A3B8)
                                     )
                                 }
                             }
@@ -1069,28 +1087,28 @@ private fun GameControlPill(
     Box(
         modifier = modifier
             .height(38.dp)
-            .shadow(if (isActive) 6.dp else 1.dp, RoundedCornerShape(19.dp), spotColor = Color(0x66DFB36E))
-            .clip(RoundedCornerShape(19.dp))
+            .shadow(if (isActive) 6.dp else 2.dp, RoundedCornerShape(12.dp), spotColor = if (isActive) Color(0xFFFFB703) else Color.Black)
+            .clip(RoundedCornerShape(12.dp))
             .background(
                 if (isActive) {
                     Brush.verticalGradient(
-                        listOf(Color(0xFFDFB36E), Color(0xFFB8893F))
+                        listOf(Color(0xFFFFD54F), Color(0xFFFF8F00))
                     )
                 } else {
                     Brush.verticalGradient(
-                        listOf(Color(0xCC1A120C), Color(0xCC1A120C))
+                        listOf(Color(0xFF141C2B), Color(0xFF0F1726))
                     )
                 }
             )
             .border(
                 width = 1.dp,
-                color = if (isActive) StudyAmberAccent else Color(0x35DFB36E),
-                shape = RoundedCornerShape(19.dp)
+                color = if (isActive) Color(0xFFFFF9C4) else Color(0xFF26354E),
+                shape = RoundedCornerShape(12.dp)
             )
             .clickable(enabled = enabled) {
                 onClick()
             }
-            .padding(horizontal = 8.dp),
+            .padding(horizontal = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(
@@ -1099,15 +1117,16 @@ private fun GameControlPill(
         ) {
             Text(
                 text = icon,
-                fontSize = 11.5.sp,
-                color = if (isActive) Color(0xFF140D08) else if (enabled) StudyParchmentCream else Color(0x55FFFFFF)
+                fontSize = 12.sp,
+                color = if (isActive) Color(0xFF140D04) else if (enabled) Color(0xFFFFB703) else Color(0xFF475569)
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = label,
                 fontSize = 10.5.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isActive) Color(0xFF140D08) else if (enabled) StudyParchmentCream else Color(0x55FFFFFF),
+                fontFamily = GameFont,
+                color = if (isActive) Color(0xFF140D04) else if (enabled) Color(0xFFF8FAFC) else Color(0xFF475569),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
