@@ -1,6 +1,0 @@
-{
-  "name": "Chess Game",
-  "description": "A feature-packed chess game app with local play, AI opponent, move suggestions, analysis, and customizable themes.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
