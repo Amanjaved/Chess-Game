@@ -2,7 +2,6 @@ package com.example.chessgame.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,14 +17,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chessgame.audio.SoundManager
 import com.example.chessgame.engine.createInitialGameState
 import com.example.chessgame.engine.makeMove
-import com.example.chessgame.theme.*
+import com.example.chessgame.theme.BoardTheme
+import com.example.chessgame.theme.PieceTheme
+import com.example.chessgame.theme.StudyAmberAccent
+import com.example.chessgame.theme.StudyParchmentCream
 import com.example.chessgame.ui.components.ChessBoardView
 
 enum class ThemePreviewTarget {
@@ -34,9 +35,9 @@ enum class ThemePreviewTarget {
 }
 
 /**
- * Grandmaster Arena: Full-Screen Interactive Theme Showcase.
- * Displays an active 8x8 tactical board showcasing how the selected BoardTheme
- * and PieceTheme look and feel together in arena combat conditions.
+ * Full-screen interactive Theme Preview.
+ * Displays an active 8x8 board showcasing how the selected BoardTheme
+ * and PieceTheme look and feel together in realistic tabletop conditions.
  */
 @Composable
 fun ThemePreviewScreen(
@@ -54,12 +55,25 @@ fun ThemePreviewScreen(
     val activeThemeDescription = if (previewTarget == ThemePreviewTarget.BOARD) boardTheme.description else pieceTheme.description
     val categoryLabel = if (previewTarget == ThemePreviewTarget.BOARD) "BOARD THEME" else "PIECE THEME"
     val pairedDetail = if (previewTarget == ThemePreviewTarget.BOARD) {
-        "Paired Pieces: ${pieceTheme.name} (${pieceTheme.subtitle})"
+        "Pieces: ${pieceTheme.name} (${pieceTheme.subtitle})"
     } else {
-        "Paired Board: ${boardTheme.name} (${boardTheme.subtitle})"
+        "Board: ${boardTheme.name} (${boardTheme.subtitle})"
     }
 
-    ArenaBackgroundScaffold {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF231B15),
+                        Color(0xFF140F0C),
+                        Color(0xFF0F0A07)
+                    ),
+                    radius = 1200f
+                )
+            )
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -70,37 +84,68 @@ fun ThemePreviewScreen(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             // Header Bar with centered title and safe-area margins
-            ArenaHeader(
-                title = "THEME SHOWCASE",
-                subtitle = if (previewTarget == ThemePreviewTarget.BOARD) "Board Showcase" else "Piece Set Showcase",
-                onBack = onBack,
-                rightContent = {
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(ArenaColors.TitaniumSurface)
-                            .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(10.dp))
-                            .clickable {
-                                SoundManager.playClick()
-                                isFlipped = !isFlipped
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("⟲", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = ArenaColors.TextPrimary)
-                    }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(
+                    onClick = {
+                        SoundManager.playClick()
+                        onBack()
+                    },
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color(0x22FFFFFF))
+                ) {
+                    Text("←", fontSize = 20.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
                 }
-            )
+
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "THEME PREVIEW",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp,
+                        color = StudyParchmentCream
+                    )
+                    Text(
+                        text = if (previewTarget == ThemePreviewTarget.BOARD) "Board Showcase" else "Piece Set Showcase",
+                        fontSize = 10.sp,
+                        color = StudyAmberAccent
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        SoundManager.playClick()
+                        isFlipped = !isFlipped
+                    },
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color(0x22FFFFFF))
+                ) {
+                    Text("⟲", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = StudyParchmentCream)
+                }
+            }
 
             Spacer(modifier = Modifier.height(6.dp))
 
             // Theme Spec Card with Equipped status and Material / Style info
-            ArenaCard(
-                modifier = Modifier.fillMaxWidth(),
-                isHighlighted = isEquipped,
-                highlightColor = ArenaColors.SolarAmber
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0x24FFFFFF))
+                    .border(1.dp, if (isEquipped) StudyAmberAccent else Color(0x30FFFFFF), RoundedCornerShape(14.dp))
+                    .padding(horizontal = 14.dp, vertical = 10.dp)
             ) {
-                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp)) {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -115,13 +160,13 @@ fun ThemePreviewScreen(
                                 text = activeThemeName.uppercase(),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Black,
-                                color = ArenaColors.TextPrimary
+                                color = StudyParchmentCream
                             )
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(ArenaColors.CyberCyan.copy(alpha = 0.2f))
-                                    .border(0.8.dp, ArenaColors.CyberCyan, RoundedCornerShape(4.dp))
+                                    .background(Color(0x33DFB36E))
+                                    .border(0.8.dp, StudyAmberAccent, RoundedCornerShape(4.dp))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
@@ -129,7 +174,7 @@ fun ThemePreviewScreen(
                                     fontSize = 8.5.sp,
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 0.8.sp,
-                                    color = ArenaColors.CyberCyan
+                                    color = StudyAmberAccent
                                 )
                             }
                         }
@@ -138,7 +183,7 @@ fun ThemePreviewScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(ArenaColors.SolarAmber)
+                                    .background(StudyAmberAccent)
                                     .padding(horizontal = 8.dp, vertical = 3.dp)
                             ) {
                                 Text(
@@ -146,7 +191,7 @@ fun ThemePreviewScreen(
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Black,
                                     letterSpacing = 0.8.sp,
-                                    color = Color(0xFF090D13)
+                                    color = Color(0xFF1B140E)
                                 )
                             }
                         }
@@ -157,7 +202,7 @@ fun ThemePreviewScreen(
                     Text(
                         text = activeThemeDescription,
                         fontSize = 11.5.sp,
-                        color = ArenaColors.TextSecondary,
+                        color = Color(0xFFC4B5A5),
                         lineHeight = 15.sp
                     )
 
@@ -167,7 +212,7 @@ fun ThemePreviewScreen(
                         text = pairedDetail,
                         fontSize = 10.5.sp,
                         fontWeight = FontWeight.Medium,
-                        color = ArenaColors.CyberCyan
+                        color = StudyAmberAccent
                     )
                 }
             }
@@ -179,9 +224,6 @@ fun ThemePreviewScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .shadow(24.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFF000000))
-                    .clip(RoundedCornerShape(16.dp))
-                    .border(1.5.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(16.dp))
                     .padding(2.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -211,9 +253,9 @@ fun ThemePreviewScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Tip: Tap pieces to test movement in arena",
+                    text = "Tip: Tap pieces to test moves on this tabletop",
                     fontSize = 11.sp,
-                    color = ArenaColors.TextMuted
+                    color = Color(0xFFAAA095)
                 )
 
                 OutlinedButton(
@@ -224,25 +266,38 @@ fun ThemePreviewScreen(
                     modifier = Modifier.height(30.dp),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = ArenaColors.TextPrimary)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = StudyParchmentCream)
                 ) {
-                    Text("Reset Arena", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Reset Board", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 
             Spacer(modifier = Modifier.height(6.dp))
 
             // Apply / Equipped Button
-            ArenaButton(
-                text = if (isEquipped) "CURRENTLY EQUIPPED ✓" else "EQUIP THIS LOADOUT",
-                icon = if (isEquipped) "✓" else "⚡",
-                isPrimary = !isEquipped,
+            Button(
                 onClick = {
                     SoundManager.playClick()
                     onApplyTheme(boardTheme, pieceTheme)
                 },
-                modifier = Modifier.fillMaxWidth().height(50.dp)
-            )
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .shadow(10.dp, RoundedCornerShape(12.dp)),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isEquipped) Color(0xFF2E2319) else StudyAmberAccent
+                ),
+                border = if (isEquipped) androidx.compose.foundation.BorderStroke(1.5.dp, StudyAmberAccent) else null,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = if (isEquipped) "CURRENTLY EQUIPPED ✓" else "USE THIS THEME",
+                    fontSize = 13.5.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.5.sp,
+                    color = if (isEquipped) StudyAmberAccent else Color(0xFF1B1309)
+                )
+            }
         }
     }
 }

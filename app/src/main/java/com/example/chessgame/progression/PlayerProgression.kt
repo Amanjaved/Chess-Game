@@ -24,12 +24,16 @@ data class Achievement(
  * Player Progression & Profile model.
  */
 data class PlayerProfile(
-    val playerName: String = "Grandmaster",
+    val playerName: String = "Player19599905",
     val level: Int = 1,
     val currentXp: Int = 0,
     val xpForNextLevel: Int = 300,
     val levelProgress: Float = 0f,
     val title: String = "Pawn Striker",
+    val coins: Int = 500,
+    val gems: Int = 35,
+    val claimedDailyGiftToday: Boolean = false,
+    val claimedChestToday: Boolean = false,
     val wins: Int = 0,
     val losses: Int = 0,
     val draws: Int = 0,
@@ -45,13 +49,15 @@ data class PlayerProfile(
 }
 
 /**
- * XP Gain breakdown after concluding a match.
+ * XP & Currency Gain breakdown after concluding a match.
  */
 data class XpGainSummary(
     val totalXpGained: Int,
     val matchXp: Int,
     val difficultyBonus: Int,
     val streakBonus: Int,
+    val coinsGained: Int = 0,
+    val gemsGained: Int = 0,
     val achievementsUnlocked: List<Achievement>,
     val didLevelUp: Boolean,
     val oldLevel: Int,
@@ -159,9 +165,13 @@ object PlayerProgressionManager {
     fun getProfile(): PlayerProfile {
         val p = prefs ?: return PlayerProfile()
 
-        val name = p.getString("player_name", "Grandmaster") ?: "Grandmaster"
+        val name = p.getString("player_name", "Player19599905") ?: "Player19599905"
         val level = p.getInt("level", 1)
         val currentXp = p.getInt("current_xp", 0)
+        val coins = p.getInt("coins", 500)
+        val gems = p.getInt("gems", 35)
+        val claimedDailyGiftToday = p.getBoolean("claimed_daily_gift_today", false)
+        val claimedChestToday = p.getBoolean("claimed_chest_today", false)
         val wins = p.getInt("wins", 0)
         val losses = p.getInt("losses", 0)
         val draws = p.getInt("draws", 0)
@@ -188,6 +198,10 @@ object PlayerProgressionManager {
             xpForNextLevel = xpNeeded,
             levelProgress = progress,
             title = getTitleForLevel(level),
+            coins = coins,
+            gems = gems,
+            claimedDailyGiftToday = claimedDailyGiftToday,
+            claimedChestToday = claimedChestToday,
             wins = wins,
             losses = losses,
             draws = draws,
@@ -204,6 +218,71 @@ object PlayerProgressionManager {
         prefs?.edit()?.putString("player_name", name.trim().take(20))?.apply()
     }
 
+    fun addCoins(amount: Int) {
+        val p = prefs ?: return
+        val current = p.getInt("coins", 500)
+        p.edit().putInt("coins", (current + amount).coerceAtLeast(0)).apply()
+    }
+
+    fun addGems(amount: Int) {
+        val p = prefs ?: return
+        val current = p.getInt("gems", 35)
+        p.edit().putInt("gems", (current + amount).coerceAtLeast(0)).apply()
+    }
+
+    fun spendCoins(amount: Int): Boolean {
+        val p = prefs ?: return false
+        val current = p.getInt("coins", 500)
+        if (current >= amount) {
+            p.edit().putInt("coins", current - amount).apply()
+            return true
+        }
+        return false
+    }
+
+    fun spendGems(amount: Int): Boolean {
+        val p = prefs ?: return false
+        val current = p.getInt("gems", 35)
+        if (current >= amount) {
+            p.edit().putInt("gems", current - amount).apply()
+            return true
+        }
+        return false
+    }
+
+    fun claimDailyGift(): Pair<Int, Int>? {
+        val p = prefs ?: return null
+        val already = p.getBoolean("claimed_daily_gift_today", false)
+        if (already) return null
+        val giftCoins = 75
+        val giftGems = 5
+        val curCoins = p.getInt("coins", 500)
+        val curGems = p.getInt("gems", 35)
+        p.edit()
+            .putBoolean("claimed_daily_gift_today", true)
+            .putInt("coins", curCoins + giftCoins)
+            .putInt("gems", curGems + giftGems)
+            .apply()
+        return Pair(giftCoins, giftGems)
+    }
+
+    fun claimRewardsChest(): Pair<Int, Int>? {
+        val p = prefs ?: return null
+        val already = p.getBoolean("claimed_chest_today", false)
+        if (already) return null
+        val chestCoins = 150
+        val chestGems = 10
+        val curCoins = p.getInt("coins", 500)
+        val curGems = p.getInt("gems", 35)
+        p.edit()
+            .putBoolean("claimed_chest_today", true)
+            .putInt("coins", curCoins + chestCoins)
+            .putInt("gems", curGems + chestGems)
+            .apply()
+        addXp(150)
+        return Pair(chestCoins, chestGems)
+    }
+
     /**
      * Records match conclusion and calculates XP and unlocked achievements.
      */
@@ -214,7 +293,7 @@ object PlayerProgressionManager {
         difficulty: AIDifficulty?,
         durationSeconds: Int
     ): XpGainSummary {
-        val p = prefs ?: return XpGainSummary(0, 0, 0, 0, emptyList(), false, 1, 1)
+        val p = prefs ?: return XpGainSummary(0, 0, 0, 0, 0, 0, emptyList(), false, 1, 1)
 
         val isWin = outcome.winner == humanColor
         val isLoss = outcome.winner != null && !isWin
@@ -311,10 +390,17 @@ object PlayerProgressionManager {
 
         val didLevelUp = newLevel > oldLevel
 
+        val coinsGained = if (isWin) 50 else if (isDraw) 25 else 10
+        val gemsGained = if (didLevelUp) 5 else 0
+        val curCoins = p.getInt("coins", 500)
+        val curGems = p.getInt("gems", 35)
+
         // Persist
         p.edit()
             .putInt("level", newLevel)
             .putInt("current_xp", currentXp)
+            .putInt("coins", curCoins + coinsGained)
+            .putInt("gems", curGems + gemsGained)
             .putInt("wins", wins)
             .putInt("losses", losses)
             .putInt("draws", draws)
@@ -328,6 +414,8 @@ object PlayerProgressionManager {
             matchXp = matchXp,
             difficultyBonus = difficultyBonus,
             streakBonus = streakBonus,
+            coinsGained = coinsGained,
+            gemsGained = gemsGained,
             achievementsUnlocked = newAchievements,
             didLevelUp = didLevelUp,
             oldLevel = oldLevel,

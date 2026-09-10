@@ -4,18 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,7 +20,7 @@ import com.example.chessgame.audio.SoundManager
 import com.example.chessgame.theme.*
 
 /**
- * Tactical Combat Pause Menu Overlay.
+ * Parchment Chess Notebook Pause Menu Overlay.
  */
 @Composable
 fun GameMenuOverlay(
@@ -39,20 +35,12 @@ fun GameMenuOverlay(
     Dialog(onDismissRequest = onResume) {
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.92f)
-                .shadow(32.dp, RoundedCornerShape(22.dp), spotColor = Color(0xDD000000))
-                .clip(RoundedCornerShape(22.dp))
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color(0xFF141924),
-                            Color(0xFF0C1018),
-                            Color(0xFF080B11)
-                        )
-                    )
-                )
-                .border(1.5.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(22.dp))
-                .padding(20.dp)
+                .fillMaxWidth(0.90f)
+                .shadow(28.dp, RoundedCornerShape(20.dp), spotColor = Color(0xCC000000))
+                .clip(RoundedCornerShape(20.dp))
+                .background(StudyParchmentCream)
+                .border(2.dp, StudyTableFrame, RoundedCornerShape(20.dp))
+                .padding(22.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -66,93 +54,95 @@ fun GameMenuOverlay(
                 ) {
                     Column {
                         Text(
-                            text = "TACTICAL PAUSE",
-                            fontSize = 18.sp,
+                            text = "PAUSED",
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 2.5.sp,
-                            fontFamily = FontFamily.Serif,
-                            color = ArenaColors.CyberCyan
+                            letterSpacing = 3.sp,
+                            color = StudyParchmentInk
                         )
                         Text(
-                            text = "Combat Operations & Parameters",
+                            text = "Match options & preferences",
                             fontSize = 11.sp,
-                            color = ArenaColors.TextSecondary
+                            color = StudyParchmentInkFaded
                         )
                     }
 
-                    IconButton(
+                    androidx.compose.material3.IconButton(
                         onClick = {
                             SoundManager.playClick()
                             onResume()
                         },
                         modifier = Modifier
                             .size(34.dp)
-                            .clip(CircleShape)
-                            .background(Color(0x22FFFFFF))
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .background(Color(0x18000000))
                     ) {
-                        Text("✕", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = ArenaColors.TextPrimary)
+                        Text("✕", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = StudyParchmentInk)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 val items = mutableListOf(
-                    Triple("RESUME OPERATIONS", "Return immediately to the active board") { onResume() },
-                    Triple("RESTART MATCH", "Reset forces to opening configuration") { onNewGame() }
+                    Triple("RESUME GAME", "Return to the board") { onResume() },
+                    Triple("RESTART MATCH", "Reset to opening position") { onNewGame() }
                 )
                 if (onOpenHistory != null) {
-                    items.add(Triple("COMBAT LOG (HISTORY)", "Inspect all recorded turn notations") { onOpenHistory() })
+                    items.add(Triple("MOVE HISTORY", "Inspect recorded moves") { onOpenHistory() })
                 }
                 items.addAll(
                     listOf(
-                        Triple("THE ARMORY (THEMES)", "Equip custom boards and piece sets") { onOpenThemes() },
-                        Triple("TACTICAL MANUAL", "Chess doctrines, mechanics and rules") { onOpenHowToPlay() },
-                        Triple("SYSTEM CONFIG", "Sound, voice announcer and visual insets") { onOpenSettings() },
-                        Triple("COMMAND DOCK", "Conclude engagement and return to lobby") { onMainMenu() }
+                        Triple("THEMES", "Change board & pieces") { onOpenThemes() },
+                        Triple("HOW TO PLAY", "Chess rules & tactics") { onOpenHowToPlay() },
+                        Triple("SETTINGS", "Audio & gameplay options") { onOpenSettings() },
+                        Triple("MAIN MENU", "Leave current match") { onMainMenu() }
                     )
                 )
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                     items.forEach { (title, subtitle, action) ->
-                        Box(
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(ArenaColors.TitaniumSurface)
-                                .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0x102B2118))
+                                .border(1.dp, StudyParchmentBorder, RoundedCornerShape(10.dp))
                                 .clickable {
                                     SoundManager.playClick()
                                     action()
                                 }
-                                .padding(horizontal = 14.dp, vertical = 10.dp)
+                                .padding(horizontal = 14.dp, vertical = 9.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = title,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Black,
-                                        letterSpacing = 1.sp,
-                                        color = if (title.contains("RESUME")) ArenaColors.CyberCyan else ArenaColors.TextPrimary
-                                    )
-                                    Text(
-                                        text = subtitle,
-                                        fontSize = 10.sp,
-                                        color = ArenaColors.TextMuted
-                                    )
-                                }
-                                Text("›", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = ArenaColors.TextMuted)
+                            Column {
+                                Text(
+                                    text = title,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = StudyParchmentInk
+                                )
+                                Text(
+                                    text = subtitle,
+                                    fontSize = 10.sp,
+                                    color = StudyParchmentInkFaded
+                                )
                             }
+                            Text(text = "→", fontSize = 14.sp, color = StudyAmberAccent)
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Bottom quote matching Screen 7
+                Text(
+                    text = "“A master knows when to pause and reflect.”",
+                    fontSize = 11.sp,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                    color = StudyParchmentInkFaded,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
             }
         }
     }

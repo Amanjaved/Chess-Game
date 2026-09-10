@@ -225,7 +225,7 @@ fun ChessBoardView(
                                         .fillMaxHeight()
                                         .background(
                                             when {
-                                                isKingChecked -> Color(0xFFC93B2B).copy(alpha = checkPulseAlpha)
+                                                isKingChecked -> Color(0xFFE11D48).copy(alpha = checkPulseAlpha * 0.7f)
                                                 isSelected -> boardTheme.selectedSquareColor
                                                 isPreviewTo -> Color(0xFFDFB36E).copy(alpha = 0.55f)
                                                 isPreviewFrom -> Color(0xFFDFB36E).copy(alpha = 0.30f)
@@ -238,13 +238,19 @@ fun ChessBoardView(
                                         )
                                         .then(
                                             when {
-                                                isSelected -> Modifier.border(2.dp, Color(0xFFC69C6D))
+                                                isSelected -> Modifier.border(2.5.dp, Color(0xFFFFCC00))
+                                                isKingChecked -> Modifier.border(2.dp, Color(0xFFFF2A1A))
                                                 isPreviewTo -> Modifier.border(2.dp, Color(0xFFDFB36E), RoundedCornerShape(2.dp))
                                                 isPreviewFrom -> Modifier.border(1.5.dp, Color(0x99DFB36E), RoundedCornerShape(2.dp))
                                                 else -> Modifier
                                             }
                                         )
                                 ) {
+                                    // King In Check dramatic flame aura
+                                    if (isKingChecked) {
+                                        KingCheckEffect()
+                                    }
+
                                     // Coordinates
                                     if (showRank) {
                                         Text(
@@ -273,32 +279,36 @@ fun ChessBoardView(
                                     if (isPreviewTo) {
                                         Box(
                                             modifier = Modifier
-                                                .size(24.dp)
+                                                .size(26.dp)
                                                 .graphicsLayer {
                                                     scaleX = destinationPulseScale
                                                     scaleY = destinationPulseScale
                                                     alpha = destinationPulseAlpha
                                                 }
-                                                .border(2.dp, Color(0xFFDFB36E), CircleShape)
+                                                .border(2.5.dp, Color(0xFFFFCC00), CircleShape)
                                         )
                                     }
 
-                                    // Tasteful move indicators for active play
+                                    // Comic game move indicators
                                     if (isLegalTarget) {
                                         if (isCaptureTarget) {
-                                            // Capture target: warm terracotta ring
+                                            // Capture target: comic red/orange combat ring
                                             Box(
                                                 modifier = Modifier
-                                                    .fillMaxSize(0.88f)
-                                                    .border(2.5.dp, boardTheme.captureColor, CircleShape)
+                                                    .fillMaxSize(0.86f)
+                                                    .border(2.5.dp, Color(0xFFFF3B30), CircleShape)
+                                                    .padding(2.dp)
+                                                    .border(1.dp, Color(0x88FFD700), CircleShape)
                                             )
                                         } else {
-                                            // Quiet move: soft sage/olive dot
+                                            // Quiet move: bright comic emerald dot with dark stroke
                                             Box(
                                                 modifier = Modifier
-                                                    .size(10.dp)
+                                                    .size(11.dp)
+                                                    .shadow(2.dp, CircleShape)
                                                     .clip(CircleShape)
-                                                    .background(boardTheme.legalMoveColor)
+                                                    .background(Color(0xFF22C55E))
+                                                    .border(1.5.dp, Color(0xFF0F172A), CircleShape)
                                             )
                                         }
                                     }
@@ -566,6 +576,83 @@ private fun PreviewArrowCanvas(
             path = arrowPath,
             color = Color(0xFF6B451B).copy(alpha = 0.85f),
             style = Stroke(width = 1.75.dp.toPx())
+        )
+    }
+}
+
+/**
+ * Comic fire flame and alert beacon effect for King in Check.
+ * Matches the dramatic comic action game visual identity.
+ */
+@Composable
+private fun KingCheckEffect(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "king_check_flame")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 0.88f,
+        targetValue = 1.18f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(420, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "flame_scale"
+    )
+    val flameAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.65f,
+        targetValue = 0.95f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(420, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "flame_alpha"
+    )
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(6000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "flame_rot"
+    )
+
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        // Pulsing fiery radial aura
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize(1.25f)
+                .graphicsLayer {
+                    scaleX = pulseScale
+                    scaleY = pulseScale
+                    alpha = flameAlpha
+                    rotationZ = rotation
+                }
+        ) {
+            val center = Offset(size.width / 2f, size.height / 2f)
+            val radius = size.minDimension / 2f
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFFFF2A1A).copy(alpha = 0.95f),
+                        Color(0xFFFF8C00).copy(alpha = 0.70f),
+                        Color(0xFFFFD700).copy(alpha = 0.35f),
+                        Color.Transparent
+                    ),
+                    center = center,
+                    radius = radius
+                ),
+                radius = radius,
+                center = center
+            )
+        }
+
+        // Inner comic hazard warning border
+        Box(
+            modifier = Modifier
+                .fillMaxSize(0.92f)
+                .border(2.5.dp, Color(0xFFFF2A1A), CircleShape)
         )
     }
 }

@@ -2,7 +2,6 @@ package com.example.chessgame.ui.screens
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,13 +18,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.chessgame.R
 import com.example.chessgame.ai.*
 import com.example.chessgame.audio.SoundManager
 import com.example.chessgame.engine.*
@@ -39,12 +34,11 @@ enum class AnalysisTab {
 }
 
 /**
- * Grandmaster Arena Game Analysis Screen.
- * Tactical debrief suite featuring:
- * - 3 top tabs: [Summary] | [Moves] | [Key Moments]
- * - Summary: Combat result card with Accuracy %, Telemetry jump button, Tactical Breakdown counts
- * - Moves Detail: Move header, classification badge, evaluation swing, best move recommendation, board view, |◀ ◀ ▶ ▶| stepper
- * - Key Moments: List of turning point cards with 1-tap jump to Moves tab
+ * Game Analysis Screen matching allpagelayout.png Screens 12, 13, 14:
+ * - 3 top pill tabs: [Summary] | [Moves] | [Key Moments]
+ * - Screen 12 (Summary): Game Result card with accuracy %, View Move Analysis button, Move Breakdown counts
+ * - Screen 13 (Moves Detail): Move header, quality badge, eval swing, explanation with best move, board, |◀ ◀ ▶ ▶| bar
+ * - Screen 14 (Key Moments): List of turning point cards with 1-tap jump to Moves tab
  */
 @Composable
 fun GameAnalysisScreen(
@@ -94,79 +88,107 @@ fun GameAnalysisScreen(
 
     val currentEvalCp = currentMoveAnalysis?.evalAfterCp ?: 0
 
-    ArenaBackgroundScaffold {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
-        ) {
-            ArenaHeader(
-                title = "TACTICAL ANALYSIS",
-                subtitle = "DEBRIEF & ENGINE ACCURACY",
-                onBack = onBack,
-                rightContent = {
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(ArenaColors.TitaniumSurface)
-                            .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(10.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.logo_game_emblem),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF241A13),
+                        Color(0xFF16100C),
+                        Color(0xFF0C0806)
+                    ),
+                    radius = 1200f
+                )
             )
+    ) {
         if (isAnalyzing) {
             // Loading Overlay
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 20.dp, vertical = 24.dp),
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 CircularProgressIndicator(
                     progress = { analysisProgress },
-                    color = ArenaColors.CyberCyan,
+                    color = StudyAmberAccent,
                     strokeWidth = 4.dp,
-                    modifier = Modifier.size(60.dp)
+                    modifier = Modifier.size(56.dp)
                 )
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(18.dp))
                 Text(
-                    text = "COMPUTING TELEMETRY...",
+                    text = "ANALYSING GAME...",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Black,
-                    letterSpacing = 2.5.sp,
-                    fontFamily = FontFamily.Serif,
-                    color = ArenaColors.TextPrimary
+                    letterSpacing = 2.sp,
+                    color = StudyParchmentCream
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "${(analysisProgress * 100).toInt()}% • Calculating minimax swings & accuracy",
+                    text = "${(analysisProgress * 100).toInt()}% • Calculating evaluations & tactics",
                     fontSize = 12.sp,
-                    color = ArenaColors.TextSecondary
+                    color = Color(0xFFAFA293)
                 )
             }
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 14.dp, vertical = 4.dp),
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                // Top Header Bar (Visually Centered)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0x22FFFFFF))
+                        .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    IconButton(
+                        onClick = {
+                            SoundManager.playClick()
+                            onBack()
+                        },
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .size(36.dp)
+                    ) {
+                        Text("←", fontSize = 20.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
+                    }
+
+                    Text(
+                        text = "Game Analysis",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp,
+                        color = StudyParchmentCream
+                    )
+
+                    IconButton(
+                        onClick = { SoundManager.playClick() },
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(36.dp)
+                    ) {
+                        Text("☰", fontSize = 18.sp, color = StudyParchmentCream)
+                    }
+                }
+
                 // 3 Top Tabs: [Summary] | [Moves] | [Key Moments]
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(20.dp))
-                        .background(ArenaColors.TitaniumSurface)
-                        .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(20.dp))
+                        .background(Color(0x18FFFFFF))
                         .padding(3.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -248,7 +270,6 @@ fun GameAnalysisScreen(
         }
     }
 }
-}
 
 @Composable
 private fun AnalysisTabButton(
@@ -261,7 +282,7 @@ private fun AnalysisTabButton(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(if (isSelected) ArenaColors.CyberCyan else Color.Transparent)
+            .background(if (isSelected) StudyAmberAccent else Color.Transparent)
             .clickable { onClick() }
             .padding(vertical = 7.dp)
     ) {
@@ -269,13 +290,13 @@ private fun AnalysisTabButton(
             text = label,
             fontSize = 12.sp,
             fontWeight = if (isSelected) FontWeight.Black else FontWeight.SemiBold,
-            color = if (isSelected) Color(0xFF05080E) else ArenaColors.TextSecondary
+            color = if (isSelected) Color(0xFF160E05) else StudyParchmentCream
         )
     }
 }
 
 /**
- * Summary Tab View: Combat Outcome, Accuracy, & Move Breakdown
+ * Screen 12: Summary Tab View
  */
 @Composable
 private fun SummaryTabView(
@@ -291,9 +312,9 @@ private fun SummaryTabView(
     val isWin = outcome.winner == humanColor
     val isDraw = outcome.isDraw || outcome.winner == null
     val resultText = when {
-        isWin -> "ARENA VICTORY"
-        isDraw -> "TACTICAL DRAW"
-        else -> "$opponentName WON"
+        isWin -> "You Win"
+        isDraw -> "Draw"
+        else -> "$opponentName Won"
     }
 
     val accuracy = if (humanColor == PieceColor.WHITE) {
@@ -330,28 +351,33 @@ private fun SummaryTabView(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // 1. Combat Result Card
+        // 1. Game Result Card
         item {
-            ArenaCard(
-                modifier = Modifier.fillMaxWidth(),
-                isHighlighted = isWin,
-                highlightColor = ArenaColors.CyberCyan
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color(0xFF261C14), Color(0xFF1A120D))
+                        )
+                    )
+                    .border(1.dp, Color(0x35D4A373), RoundedCornerShape(16.dp))
+                    .padding(16.dp)
             ) {
-                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "ENGAGEMENT OUTCOME",
+                        text = "Game Result",
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        color = ArenaColors.TextSecondary
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFFAFA293)
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = resultText,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.Serif,
-                        color = if (isWin) ArenaColors.SolarAmber else if (isDraw) ArenaColors.CyberCyan else ArenaColors.CrimsonAlert
+                        color = if (isWin) Color(0xFF66BB6A) else if (isDraw) StudyAmberAccent else Color(0xFFEF5350)
                     )
 
                     Spacer(modifier = Modifier.height(14.dp))
@@ -363,73 +389,90 @@ private fun SummaryTabView(
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Opponent: ", fontSize = 11.sp, color = ArenaColors.TextMuted)
-                                Text(oppDisplay, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = ArenaColors.TextPrimary)
+                                Text("Opponent: ", fontSize = 11.sp, color = Color(0xFFAFA293))
+                                Text(oppDisplay, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = StudyParchmentCream)
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Total Plies: ", fontSize = 11.sp, color = ArenaColors.TextMuted)
-                                Text("$totalMoves", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = ArenaColors.TextPrimary)
+                                Text("Total Moves: ", fontSize = 11.sp, color = Color(0xFFAFA293))
+                                Text("$totalMoves", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = StudyParchmentCream)
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Duration: ", fontSize = 11.sp, color = ArenaColors.TextMuted)
-                                Text(durationFormatted, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = ArenaColors.TextPrimary)
+                                Text("Duration: ", fontSize = 11.sp, color = Color(0xFFAFA293))
+                                Text(durationFormatted, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = StudyParchmentCream)
                             }
                         }
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "ACCURACY",
+                                text = "Accuracy",
                                 fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = ArenaColors.TextMuted
+                                color = Color(0xFFAFA293)
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "$accuracy%",
                                 fontSize = 28.sp,
                                 fontWeight = FontWeight.Black,
-                                color = ArenaColors.CyberCyan
+                                color = StudyAmberAccent
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    ArenaButton(
-                        text = "LAUNCH MOVE TELEMETRY",
-                        icon = "🔍",
-                        isPrimary = true,
+                    Button(
                         onClick = {
                             SoundManager.playClick()
                             onViewMoveAnalysis()
                         },
-                        modifier = Modifier.fillMaxWidth().height(46.dp)
-                    )
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = StudyAmberAccent,
+                            contentColor = Color(0xFF140D05)
+                        ),
+                        shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(44.dp)
+                            .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = StudyAmberAccent)
+                    ) {
+                        Text(
+                            text = "View Move Analysis",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
                 }
             }
         }
 
         // 2. Move Breakdown Section
         item {
-            ArenaCard(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFF1C130D))
+                    .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(16.dp))
+                    .padding(16.dp)
+            ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        text = "TACTICAL BREAKDOWN",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp,
-                        color = ArenaColors.TextPrimary
+                        text = "Move Breakdown",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = StudyParchmentCream
                     )
 
-                    BreakdownRow("✦", "Brilliant Moves", brilliantCount, Color(0xFF00E5FF))
-                    BreakdownRow("★", "Best Moves", bestCount, Color(0xFF00E676))
-                    BreakdownRow("✓", "Good Moves", goodCount, Color(0xFF69F0AE))
-                    BreakdownRow("?!", "Inaccuracies", inaccCount, Color(0xFFFFD700))
-                    BreakdownRow("?", "Mistakes", mistakeCount, Color(0xFFFF9100))
-                    BreakdownRow("??", "Blunders", blunderCount, Color(0xFFFF3D00))
+                    BreakdownRow("✦", "Brilliant", brilliantCount, Color(0xFF26C6DA))
+                    BreakdownRow("★", "Best Moves", bestCount, Color(0xFF66BB6A))
+                    BreakdownRow("✓", "Good Moves", goodCount, Color(0xFF9CCC65))
+                    BreakdownRow("?!", "Inaccuracies", inaccCount, Color(0xFFFFEE58))
+                    BreakdownRow("?", "Mistakes", mistakeCount, Color(0xFFFFA726))
+                    BreakdownRow("??", "Blunders", blunderCount, Color(0xFFEF5350))
                 }
             }
         }
@@ -447,8 +490,7 @@ private fun BreakdownRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(ArenaColors.TitaniumSurface)
-            .border(1.dp, ArenaColors.TitaniumBorderSubtle, RoundedCornerShape(8.dp))
+            .background(Color(0x10FFFFFF))
             .padding(horizontal = 12.dp, vertical = 7.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -459,7 +501,7 @@ private fun BreakdownRow(
                 modifier = Modifier
                     .size(24.dp)
                     .clip(CircleShape)
-                    .background(badgeColor.copy(alpha = 0.2f))
+                    .background(badgeColor.copy(alpha = 0.22f))
                     .border(1.dp, badgeColor, CircleShape)
             ) {
                 Text(
@@ -474,7 +516,7 @@ private fun BreakdownRow(
                 text = name,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = ArenaColors.TextPrimary
+                color = StudyParchmentCream
             )
         }
 
@@ -482,13 +524,13 @@ private fun BreakdownRow(
             text = "$count",
             fontSize = 13.sp,
             fontWeight = FontWeight.Black,
-            color = ArenaColors.TextPrimary
+            color = StudyParchmentCream
         )
     }
 }
 
 /**
- * Move Analysis (Detail) Tab View
+ * Screen 13: Move Analysis (Detail) Tab View
  */
 @Composable
 private fun MovesDetailTabView(
@@ -516,10 +558,10 @@ private fun MovesDetailTabView(
                 modifier = Modifier.fillMaxWidth().padding(top = 2.dp)
             ) {
                 Text(
-                    text = if (currentMoveIndex == -1) "Initial Battle Line" else "Move ${currentMoveIndex + 1} of ${moves.size}",
+                    text = if (currentMoveIndex == -1) "Starting Position" else "Move ${currentMoveIndex + 1} of ${moves.size}",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ArenaColors.TextSecondary
+                    color = Color(0xFFAFA293)
                 )
             }
         }
@@ -533,9 +575,7 @@ private fun MovesDetailTabView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .shadow(24.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFF000000))
-                    .clip(RoundedCornerShape(16.dp))
-                    .border(1.5.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(16.dp)),
+                    .shadow(16.dp, RoundedCornerShape(14.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 ChessBoardView(
@@ -561,8 +601,8 @@ private fun MovesDetailTabView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(ArenaColors.TitaniumSurface)
-                    .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(12.dp))
+                    .background(Color(0xFF1E150F))
+                    .border(1.dp, Color(0x28FFFFFF), RoundedCornerShape(12.dp))
                     .padding(horizontal = 12.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -572,7 +612,7 @@ private fun MovesDetailTabView(
                     enabled = currentMoveIndex > -1,
                     modifier = Modifier.size(38.dp)
                 ) {
-                    Text("|◀", fontSize = 14.sp, fontWeight = FontWeight.Black, color = ArenaColors.TextPrimary)
+                    Text("|◀", fontSize = 14.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
                 }
 
                 IconButton(
@@ -580,7 +620,7 @@ private fun MovesDetailTabView(
                     enabled = currentMoveIndex > -1,
                     modifier = Modifier.size(38.dp)
                 ) {
-                    Text("◀", fontSize = 16.sp, fontWeight = FontWeight.Black, color = ArenaColors.TextPrimary)
+                    Text("◀", fontSize = 16.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
                 }
 
                 IconButton(
@@ -588,7 +628,7 @@ private fun MovesDetailTabView(
                     enabled = currentMoveIndex < moves.size - 1,
                     modifier = Modifier.size(38.dp)
                 ) {
-                    Text("▶", fontSize = 16.sp, fontWeight = FontWeight.Black, color = ArenaColors.TextPrimary)
+                    Text("▶", fontSize = 16.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
                 }
 
                 IconButton(
@@ -596,7 +636,7 @@ private fun MovesDetailTabView(
                     enabled = currentMoveIndex < moves.size - 1,
                     modifier = Modifier.size(38.dp)
                 ) {
-                    Text("▶|", fontSize = 14.sp, fontWeight = FontWeight.Black, color = ArenaColors.TextPrimary)
+                    Text("▶|", fontSize = 14.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
                 }
             }
         }
@@ -610,36 +650,36 @@ private fun MoveDetailCard(analysis: MoveAnalysis?) {
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(ArenaColors.TitaniumSurface)
-                .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(12.dp))
+                .background(Color(0xFF221710))
+                .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(12.dp))
                 .padding(12.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Initial setup. Use navigation buttons below to step through telemetry.",
+                text = "Initial setup. Use navigation buttons below to step through moves.",
                 fontSize = 11.sp,
-                color = ArenaColors.TextMuted
+                color = Color(0xFFAFA293)
             )
         }
         return
     }
 
     val badgeColor = when (analysis.classification) {
-        MoveClassification.BRILLIANT -> Color(0xFF00E5FF)
-        MoveClassification.BEST -> Color(0xFF00E676)
-        MoveClassification.STRONG -> Color(0xFF69F0AE)
-        MoveClassification.GOOD -> Color(0xFF81D4FA)
-        MoveClassification.BOOK -> Color(0xFF4FC3F7)
-        MoveClassification.INACCURACY -> Color(0xFFFFD700)
-        MoveClassification.MISTAKE -> Color(0xFFFF9100)
-        MoveClassification.BLUNDER -> Color(0xFFFF3D00)
+        MoveClassification.BRILLIANT -> Color(0xFF26C6DA)
+        MoveClassification.BEST -> Color(0xFF66BB6A)
+        MoveClassification.STRONG -> Color(0xFFD4A373)
+        MoveClassification.GOOD -> Color(0xFF9CCC65)
+        MoveClassification.BOOK -> Color(0xFF81D4FA)
+        MoveClassification.INACCURACY -> Color(0xFFFFEE58)
+        MoveClassification.MISTAKE -> Color(0xFFFFA726)
+        MoveClassification.BLUNDER -> Color(0xFFEF5350)
     }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(ArenaColors.TitaniumSurface)
+            .background(Color(0xFF221710))
             .border(1.5.dp, badgeColor.copy(alpha = 0.65f), RoundedCornerShape(12.dp))
             .padding(12.dp)
     ) {
@@ -656,13 +696,13 @@ private fun MoveDetailCard(analysis: MoveAnalysis?) {
                                 text = analysis.san,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Black,
-                                color = ArenaColors.TextPrimary
+                                color = StudyParchmentCream
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = if (analysis.moveColor == PieceColor.WHITE) "(White)" else "(Black)",
                                 fontSize = 11.sp,
-                                color = ArenaColors.TextSecondary
+                                color = Color(0xFFAFA293)
                             )
                         }
                         val moveDesc = GameAnalyzer.describeSan(analysis.san)
@@ -671,7 +711,7 @@ private fun MoveDetailCard(analysis: MoveAnalysis?) {
                                 text = moveDesc,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = ArenaColors.CyberCyan
+                                color = StudyAmberAccent.copy(alpha = 0.9f)
                             )
                         }
                     }
@@ -687,7 +727,7 @@ private fun MoveDetailCard(analysis: MoveAnalysis?) {
                         text = "${analysis.classification.icon} ${analysis.classification.label}",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Black,
-                        color = Color(0xFF070B10)
+                        color = Color(0xFF140D06)
                     )
                 }
             }
@@ -700,7 +740,7 @@ private fun MoveDetailCard(analysis: MoveAnalysis?) {
                 text = "Evaluation: $beforeStr → $afterStr",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                color = ArenaColors.SolarAmber
+                color = StudyAmberAccent
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -708,7 +748,7 @@ private fun MoveDetailCard(analysis: MoveAnalysis?) {
             Text(
                 text = analysis.explanation,
                 fontSize = 12.sp,
-                color = ArenaColors.TextPrimary,
+                color = StudyParchmentCream,
                 lineHeight = 16.sp
             )
 
@@ -721,15 +761,15 @@ private fun MoveDetailCard(analysis: MoveAnalysis?) {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(ArenaColors.CyberCyan.copy(alpha = 0.15f))
-                        .border(1.dp, ArenaColors.CyberCyan.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
+                        .background(Color(0x18E5A93C))
+                        .border(1.dp, Color(0x30E5A93C), RoundedCornerShape(6.dp))
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = "Optimal Move: ",
+                        text = "Best Move: ",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ArenaColors.CyberCyan
+                        color = StudyAmberAccent
                     )
                     val bestDesc = GameAnalyzer.describeSan(analysis.bestEngineSan)
                     val bestText = if (bestDesc.isNotEmpty()) "${analysis.bestEngineSan} ($bestDesc)" else analysis.bestEngineSan
@@ -737,7 +777,7 @@ private fun MoveDetailCard(analysis: MoveAnalysis?) {
                         text = bestText,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Black,
-                        color = ArenaColors.TextPrimary
+                        color = StudyParchmentCream
                     )
                 }
             }
@@ -746,7 +786,7 @@ private fun MoveDetailCard(analysis: MoveAnalysis?) {
 }
 
 /**
- * Key Moments Tab View
+ * Screen 14: Key Moments Tab View
  */
 @Composable
 private fun KeyMomentsTabView(
@@ -763,7 +803,7 @@ private fun KeyMomentsTabView(
             Text(
                 text = "No critical key moments detected in this match.",
                 fontSize = 13.sp,
-                color = ArenaColors.TextMuted
+                color = Color(0xFFAFA293)
             )
         }
         return
@@ -775,21 +815,21 @@ private fun KeyMomentsTabView(
     ) {
         items(moments) { moment ->
             val badgeColor = when (moment.classification) {
-                MoveClassification.BRILLIANT -> Color(0xFF00E5FF)
-                MoveClassification.BEST -> Color(0xFF00E676)
-                MoveClassification.STRONG -> Color(0xFF69F0AE)
-                MoveClassification.GOOD -> Color(0xFF81D4FA)
-                MoveClassification.BOOK -> Color(0xFF4FC3F7)
-                MoveClassification.INACCURACY -> Color(0xFFFFD700)
-                MoveClassification.MISTAKE -> Color(0xFFFF9100)
-                MoveClassification.BLUNDER -> Color(0xFFFF3D00)
+                MoveClassification.BRILLIANT -> Color(0xFF26C6DA)
+                MoveClassification.BEST -> Color(0xFF66BB6A)
+                MoveClassification.STRONG -> Color(0xFFD4A373)
+                MoveClassification.GOOD -> Color(0xFF9CCC65)
+                MoveClassification.BOOK -> Color(0xFF81D4FA)
+                MoveClassification.INACCURACY -> Color(0xFFFFEE58)
+                MoveClassification.MISTAKE -> Color(0xFFFFA726)
+                MoveClassification.BLUNDER -> Color(0xFFEF5350)
             }
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(ArenaColors.TitaniumSurface)
+                    .background(Color(0xFF221710))
                     .border(1.dp, badgeColor.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                     .clickable { onSelectMoment(moment.moveIndex) }
                     .padding(14.dp)
@@ -826,23 +866,23 @@ private fun KeyMomentsTabView(
                                 text = moment.title,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = ArenaColors.TextPrimary
+                                color = StudyParchmentCream
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = moment.description,
                                 fontSize = 11.sp,
-                                color = ArenaColors.TextSecondary,
+                                color = Color(0xFFAFA293),
                                 lineHeight = 15.sp
                             )
                         }
                     }
 
                     Text(
-                        text = "INSPECT ›",
+                        text = "VIEW →",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ArenaColors.CyberCyan
+                        color = StudyAmberAccent
                     )
                 }
             }
@@ -863,18 +903,18 @@ private fun EvaluationBar(evalCp: Int) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "ENGINE EVALUATION",
+                text = "EVALUATION",
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 1.sp,
-                color = ArenaColors.TextMuted
+                color = Color(0xFFAFA293)
             )
             Text(
                 text = evalText,
                 fontSize = 12.sp,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
-                color = if (evalCp >= 0) ArenaColors.CyberCyan else ArenaColors.CrimsonAlert
+                color = if (evalCp >= 0) StudyParchmentCream else Color(0xFFFF9E80)
             )
         }
 
@@ -885,14 +925,14 @@ private fun EvaluationBar(evalCp: Int) {
                 .fillMaxWidth()
                 .height(10.dp)
                 .clip(RoundedCornerShape(5.dp))
-                .background(Color(0xFF0A0F16))
-                .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(5.dp))
+                .background(Color(0xFF332319))
+                .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(5.dp))
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(whiteRatio)
                     .fillMaxHeight()
-                    .background(Color(0xFFE2EDF8))
+                    .background(Color(0xFFF7F3EB))
             )
         }
     }

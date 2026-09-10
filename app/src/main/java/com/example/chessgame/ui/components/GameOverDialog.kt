@@ -4,6 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -47,53 +50,55 @@ fun GameOverDialog(
     val subtitle = when (outcome.reason) {
         OutcomeReason.CHECKMATE -> {
             if (isAIMode) {
-                if (outcome.winner == humanColor) "TACTICAL VICTORY" else "TACTICAL DEFEAT"
+                if (outcome.winner == humanColor) "YOU WIN!" else "AI WINS!"
             } else {
-                if (outcome.winner == PieceColor.WHITE) "WHITE FORCES VICTORIOUS" else "BLACK FORCES VICTORIOUS"
+                if (outcome.winner == PieceColor.WHITE) "WHITE WINS!" else "BLACK WINS!"
             }
         }
-        OutcomeReason.STALEMATE -> "Gridlock by stalemate"
-        OutcomeReason.INSUFFICIENT_MATERIAL -> "Draw by depleted material"
-        OutcomeReason.FIFTY_MOVE_RULE -> "Draw by 50-move doctrine"
-        OutcomeReason.THREEFOLD_REPETITION -> "Draw by threefold cycle"
-        OutcomeReason.MUTUAL_AGREEMENT -> "Ceasefire agreed by both commanders"
+        OutcomeReason.STALEMATE -> "Game drawn by stalemate"
+        OutcomeReason.INSUFFICIENT_MATERIAL -> "Draw by insufficient material"
+        OutcomeReason.FIFTY_MOVE_RULE -> "Draw by 50-move rule"
+        OutcomeReason.THREEFOLD_REPETITION -> "Draw by threefold repetition"
+        OutcomeReason.MUTUAL_AGREEMENT -> "Draw agreed by both players"
         OutcomeReason.RESIGNATION -> {
             if (isAIMode) {
-                if (outcome.winner == humanColor) "Enemy commander resigned" else "You surrendered the sector"
+                if (outcome.winner == humanColor) "AI Resigned — You Win!" else "You Resigned — AI Wins!"
             } else {
-                "${if (outcome.winner == PieceColor.WHITE) "White" else "Black"} triumphs by surrender"
+                "${if (outcome.winner == PieceColor.WHITE) "White" else "Black"} wins by resignation"
             }
         }
-        null -> "Engagement terminated"
+        null -> "Match concluded"
     }
-
-    val accentColor = if (isWinner) ArenaColors.EmeraldVictory else if (isDraw) ArenaColors.CyberCyan else ArenaColors.CrimsonAlert
 
     Dialog(onDismissRequest = { /* Must choose an action */ }) {
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.92f)
-                .clip(RoundedCornerShape(20.dp))
-                .background(ArenaColors.TitaniumSurface)
+                .clip(RoundedCornerShape(22.dp))
+                .background(
+                    androidx.compose.ui.graphics.Brush.verticalGradient(
+                        listOf(Color(0xFF281C13), Color(0xFF19110B), Color(0xFF0F0A06))
+                    )
+                )
                 .border(
                     width = 1.5.dp,
-                    color = accentColor.copy(alpha = 0.6f),
-                    shape = RoundedCornerShape(20.dp)
+                    color = if (isWinner) StudyAmberAccent else if (isDraw) Color(0xFF64B5F6) else StudyTableFrame,
+                    shape = RoundedCornerShape(22.dp)
                 )
                 .padding(24.dp)
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                // Large Trophy or Crown Emblem
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .size(60.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(accentColor.copy(alpha = 0.15f))
-                        .border(1.dp, accentColor.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(if (isWinner) StudyAmberAccent.copy(alpha = 0.2f) else if (isDraw) Color(0x3064B5F6) else Color(0x30E53935))
                 ) {
                     Text(
                         text = if (isWinner) "🏆" else if (isDraw) "🤝" else "⚔️",
-                        fontSize = 30.sp
+                        fontSize = 32.sp
                     )
                 }
 
@@ -101,46 +106,45 @@ fun GameOverDialog(
 
                 Text(
                     text = title,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp,
-                    color = accentColor
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 3.sp,
+                    color = if (isWinner) StudyAmberAccent else StudyParchmentCream
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
                     text = subtitle,
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.sp,
-                    color = ArenaColors.TextSecondary
+                    color = StudyParchmentCream.copy(alpha = 0.8f)
                 )
 
                 Spacer(modifier = Modifier.height(18.dp))
 
-                // Combat Telemetry Box
+                // Stats Box
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(ArenaColors.TitaniumSurfaceRaised)
-                        .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(12.dp))
-                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                        .background(StudyParchmentCream)
+                        .border(1.dp, StudyParchmentBorder, RoundedCornerShape(12.dp))
+                        .padding(vertical = 10.dp, horizontal = 14.dp),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "TOTAL PLIES", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = ArenaColors.TextMuted, letterSpacing = 1.sp)
-                        Text(text = "$moveCount", fontSize = 18.sp, fontWeight = FontWeight.Black, color = ArenaColors.TextPrimary)
+                        Text(text = "MOVES", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = StudyParchmentInkFaded)
+                        Text(text = "$moveCount", fontSize = 16.sp, fontWeight = FontWeight.Black, color = StudyParchmentInk)
                     }
-                    Box(modifier = Modifier.width(1.dp).height(30.dp).background(ArenaColors.TitaniumBorder))
+                    Box(modifier = Modifier.width(1.dp).height(28.dp).background(StudyParchmentBorder))
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "OUTCOME", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = ArenaColors.TextMuted, letterSpacing = 1.sp)
+                        Text(text = "RESULT", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = StudyParchmentInkFaded)
                         Text(
                             text = if (outcome.isDraw) "½ - ½" else if (outcome.winner == PieceColor.WHITE) "1 - 0" else "0 - 1",
-                            fontSize = 18.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Black,
-                            color = accentColor
+                            color = if (isWinner) Color(0xFF2E7D32) else if (isDraw) Color(0xFF1565C0) else Color(0xFFC62828)
                         )
                     }
                 }
@@ -149,45 +153,59 @@ fun GameOverDialog(
 
                 // Actions
                 if (onAnalyseGame != null) {
-                    ArenaButton(
-                        text = "DEBRIEF & ANALYZE",
-                        icon = "🔍",
+                    Button(
                         onClick = onAnalyseGame,
-                        isPrimary = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
+                        colors = ButtonDefaults.buttonColors(containerColor = StudyAmberAccent),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth().height(46.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "🔍 ", fontSize = 14.sp)
+                            Text("ANALYSE GAME", fontWeight = FontWeight.Black, letterSpacing = 1.sp, color = Color(0xFF1B140E))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                ArenaButton(
-                    text = "RE-DEPLOY / REMATCH",
+                Button(
                     onClick = onPlayAgain,
-                    isPrimary = (onAnalyseGame == null),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    colors = ButtonDefaults.buttonColors(containerColor = if (onAnalyseGame == null) StudyAmberAccent else Color(0xFF38291F)),
+                    border = if (onAnalyseGame != null) androidx.compose.foundation.BorderStroke(1.dp, Color(0x44D4A373)) else null,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth().height(44.dp)
+                ) {
+                    Text(
+                        "PLAY AGAIN",
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        color = if (onAnalyseGame == null) Color(0xFF111418) else StudyParchmentCream
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    ArenaButton(
-                        text = "REVIEW",
+                    OutlinedButton(
                         onClick = onReviewBoard,
-                        isPrimary = false,
-                        modifier = Modifier.weight(1f)
-                    )
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.weight(1f).height(42.dp)
+                    ) {
+                        Text("Review", color = StudyParchmentCream, fontSize = 12.sp)
+                    }
 
-                    ArenaButton(
-                        text = "LOBBY",
+                    OutlinedButton(
                         onClick = onMainMenu,
-                        isPrimary = false,
-                        modifier = Modifier.weight(1f)
-                    )
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.weight(1f).height(42.dp)
+                    ) {
+                        Text("Menu", color = StudyParchmentCream, fontSize = 12.sp)
+                    }
                 }
             }
         }
     }
 }
-
