@@ -101,12 +101,15 @@ fun GameAnalysisScreen(
                     radius = 1200f
                 )
             )
-            .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         if (isAnalyzing) {
             // Loading Overlay
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -133,33 +136,38 @@ fun GameAnalysisScreen(
             }
         } else {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Top Header Bar
-                Row(
+                // Top Header Bar (Visually Centered)
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color(0x22FFFFFF))
                         .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     IconButton(
                         onClick = {
                             SoundManager.playClick()
                             onBack()
                         },
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .size(36.dp)
                     ) {
                         Text("←", fontSize = 20.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
                     }
 
                     Text(
                         text = "Game Analysis",
-                        fontSize = 18.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.sp,
                         color = StudyParchmentCream
@@ -167,7 +175,9 @@ fun GameAnalysisScreen(
 
                     IconButton(
                         onClick = { SoundManager.playClick() },
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(36.dp)
                     ) {
                         Text("☰", fontSize = 18.sp, color = StudyParchmentCream)
                     }

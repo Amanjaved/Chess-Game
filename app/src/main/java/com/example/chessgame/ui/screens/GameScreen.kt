@@ -1,9 +1,12 @@
 package com.example.chessgame.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -113,6 +116,20 @@ fun GameScreen(
     var showYourMoveBanner by remember { mutableStateOf(false) }
     var confirmDialogType by remember { mutableStateOf<String?>(null) } // "restart", "resign", "draw", "back"
 
+    // System Back Gesture handling: dismiss dialogs first, then prompt to leave active match, or navigate back
+    BackHandler {
+        when {
+            confirmDialogType != null -> confirmDialogType = null
+            showSettingsDialog -> showSettingsDialog = false
+            showHowToPlayDialog -> showHowToPlayDialog = false
+            showHistorySheet -> showHistorySheet = false
+            showGamePauseMenu -> showGamePauseMenu = false
+            showGameOverOverlay -> showGameOverOverlay = false
+            gameState.history.isNotEmpty() && !outcome.isOver -> confirmDialogType = "back"
+            else -> onBackToMenu()
+        }
+    }
+
     // Match Duration Clock
     var gameDurationSeconds by remember { mutableStateOf(0) }
     var whiteTimeSeconds by remember { mutableStateOf(0) }
@@ -147,11 +164,11 @@ fun GameScreen(
         VoiceAnnouncer.announceGameStart(isAIMode)
     }
 
-    // Trigger "YOUR MOVE" subtle notice when turn becomes human in AI mode
+    // Trigger "YOUR MOVE" notice when turn becomes human in AI mode (fast 750ms duration)
     LaunchedEffect(gameState.turn) {
         if (isAIMode && gameState.turn == humanColor && !outcome.isOver && gameState.history.isNotEmpty()) {
             showYourMoveBanner = true
-            delay(2400)
+            delay(750)
             showYourMoveBanner = false
         }
     }
@@ -180,6 +197,7 @@ fun GameScreen(
         previewMove = null
         hintSuggestions = emptyList()
         isCalculatingHints = false
+        showYourMoveBanner = false
 
         val san = moveToSAN(gameState, move)
         move.san = san
@@ -317,130 +335,124 @@ fun GameScreen(
                     radius = 1200f
                 )
             )
-            .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
         val scrollState = rememberScrollState()
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 14.dp, vertical = 6.dp)
                 .verticalScroll(scrollState),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // ==========================================
-            // TOP TABLETOP NAVIGATION BAR
+            // TOP TABLETOP NAVIGATION BAR (VISUALLY CENTERED)
             // ==========================================
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
                     .background(Color(0x22FFFFFF))
                     .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(14.dp))
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center
             ) {
-                // Back Button & Match Title
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = {
-                            if (gameState.history.isNotEmpty() && !outcome.isOver) {
-                                confirmDialogType = "back"
-                            } else {
-                                onBackToMenu()
-                            }
-                        },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Text("←", fontSize = 20.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
-                    }
-
-                    Spacer(modifier = Modifier.width(6.dp))
-
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = if (isAIMode) "VS AI" else "LOCAL 2P",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 1.sp,
-                                color = StudyParchmentCream
-                            )
-                            if (isAIMode) {
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(StudyAmberAccent)
-                                        .padding(horizontal = 5.dp, vertical = 1.dp)
-                                ) {
-                                    Text(
-                                        text = aiDifficulty.name,
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = Color(0xFF1B1207)
-                                    )
-                                }
-                            }
+                // Back Button (Left)
+                IconButton(
+                    onClick = {
+                        if (gameState.history.isNotEmpty() && !outcome.isOver) {
+                            confirmDialogType = "back"
+                        } else {
+                            onBackToMenu()
                         }
-                        val min = gameDurationSeconds / 60
-                        val sec = gameDurationSeconds % 60
-                        Text(
-                            text = "Move ${gameState.fullmoveNumber} • %02d:%02d".format(min, sec),
-                            fontSize = 11.sp,
-                            color = Color(0xFFAFA293)
-                        )
-                    }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .size(36.dp)
+                ) {
+                    Text("←", fontSize = 20.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
                 }
 
-                // Quick Header Actions
+                // Centered Title & Status
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = if (isAIMode) "VS AI" else "LOCAL 2P",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp,
+                            color = StudyParchmentCream
+                        )
+                        if (isAIMode) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(StudyAmberAccent)
+                                    .padding(horizontal = 5.dp, vertical = 1.dp)
+                            ) {
+                                Text(
+                                    text = aiDifficulty.name,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF1B1207)
+                                )
+                            }
+                        }
+                    }
+                    val min = gameDurationSeconds / 60
+                    val sec = gameDurationSeconds % 60
+                    Text(
+                        text = "Move ${gameState.fullmoveNumber} • %02d:%02d".format(min, sec),
+                        fontSize = 10.5.sp,
+                        color = Color(0xFFAFA293)
+                    )
+                }
+
+                // Quick Header Actions (Right)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    modifier = Modifier.align(Alignment.CenterEnd)
                 ) {
-                    // Quick Hints icon in top bar as well
                     if (showMoveHints && !outcome.isOver) {
                         IconButton(
                             onClick = { toggleHints() },
                             modifier = Modifier
-                                .size(34.dp)
+                                .size(32.dp)
                                 .clip(CircleShape)
                                 .background(if (showHints) StudyAmberAccent else Color(0x18FFFFFF))
                         ) {
-                            Text(
-                                text = "💡",
-                                fontSize = 14.sp
-                            )
+                            Text(text = "💡", fontSize = 13.sp)
                         }
                     }
 
-                    // Voice commentary
                     IconButton(
                         onClick = {
                             val next = !voiceEnabled
                             VoiceAnnouncer.setVoiceEnabled(next)
                             onVoiceChanged(next)
                         },
-                        modifier = Modifier.size(34.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
-                        Text(text = if (voiceEnabled) "🎙️" else "🔇", fontSize = 15.sp)
+                        Text(text = if (voiceEnabled) "🎙️" else "🔇", fontSize = 13.sp)
                     }
 
-                    // Move History
                     IconButton(
                         onClick = { showHistorySheet = true },
-                        modifier = Modifier.size(34.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
-                        Text("📜", fontSize = 15.sp)
+                        Text("📜", fontSize = 13.sp)
                     }
 
-                    // Pause / Game Menu
                     IconButton(
                         onClick = { showGamePauseMenu = true },
-                        modifier = Modifier.size(34.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
-                        Text("☰", fontSize = 18.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
+                        Text("⚙️", fontSize = 13.sp)
                     }
                 }
             }
@@ -493,27 +505,36 @@ fun GameScreen(
                     boardTheme = currentBoardTheme,
                     pieceTheme = currentPieceTheme,
                     lastMove = lastMove,
-                    onMove = { executeMove(it) },
+                    onMove = {
+                        showYourMoveBanner = false
+                        executeMove(it)
+                    },
                     previewFrom = previewMove?.from,
                     previewTo = previewMove?.to,
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // "YOUR MOVE" Overlay Banner
-                if (showYourMoveBanner) {
+                // "YOUR MOVE" Overlay Banner with fast 1.1s total duration and smooth scale+fade
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = showYourMoveBanner,
+                    enter = fadeIn(tween(180)) + scaleIn(initialScale = 0.85f, animationSpec = tween(180)),
+                    exit = fadeOut(tween(180)) + scaleOut(targetScale = 0.85f, animationSpec = tween(180)),
+                    modifier = Modifier.align(Alignment.Center)
+                ) {
                     Box(
                         modifier = Modifier
+                            .shadow(12.dp, RoundedCornerShape(14.dp))
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xE61A120B))
+                            .background(Color(0xF21A120B))
                             .border(1.5.dp, StudyAmberAccent, RoundedCornerShape(14.dp))
                             .clickable { showYourMoveBanner = false }
-                            .padding(horizontal = 24.dp, vertical = 14.dp),
+                            .padding(horizontal = 22.dp, vertical = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = "YOUR MOVE",
-                                fontSize = 18.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Black,
                                 letterSpacing = 2.sp,
                                 color = StudyAmberAccent
@@ -521,7 +542,7 @@ fun GameScreen(
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "Think ahead.",
-                                fontSize = 12.sp,
+                                fontSize = 11.sp,
                                 color = StudyParchmentCream
                             )
                         }

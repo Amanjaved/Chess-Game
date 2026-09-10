@@ -52,20 +52,22 @@ fun ColorSelectScreen(
                     radius = 1200f
                 )
             )
-            .padding(horizontal = 20.dp, vertical = 18.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 20.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Header
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+            // Header (Visually Centered)
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
+                    .padding(vertical = 4.dp),
+                contentAlignment = Alignment.Center
             ) {
                 IconButton(
                     onClick = {
@@ -73,6 +75,7 @@ fun ColorSelectScreen(
                         onBack()
                     },
                     modifier = Modifier
+                        .align(Alignment.CenterStart)
                         .size(42.dp)
                         .clip(CircleShape)
                         .background(Color(0x22FFFFFF))
@@ -83,7 +86,7 @@ fun ColorSelectScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "CHOOSE YOUR SIDE",
-                        fontSize = 20.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 2.sp,
                         color = StudyParchmentCream
@@ -94,8 +97,6 @@ fun ColorSelectScreen(
                         color = StudyAmberAccent
                     )
                 }
-
-                Spacer(modifier = Modifier.size(42.dp))
             }
 
             Spacer(modifier = Modifier.height(14.dp))

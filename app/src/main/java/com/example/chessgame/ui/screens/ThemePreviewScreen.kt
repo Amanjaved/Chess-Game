@@ -18,12 +18,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chessgame.audio.SoundManager
-import com.example.chessgame.engine.GameState
-import com.example.chessgame.engine.Move
 import com.example.chessgame.engine.createInitialGameState
 import com.example.chessgame.engine.makeMove
 import com.example.chessgame.theme.BoardTheme
@@ -31,6 +28,11 @@ import com.example.chessgame.theme.PieceTheme
 import com.example.chessgame.theme.StudyAmberAccent
 import com.example.chessgame.theme.StudyParchmentCream
 import com.example.chessgame.ui.components.ChessBoardView
+
+enum class ThemePreviewTarget {
+    BOARD,
+    PIECE
+}
 
 /**
  * Full-screen interactive Theme Preview.
@@ -41,12 +43,22 @@ import com.example.chessgame.ui.components.ChessBoardView
 fun ThemePreviewScreen(
     boardTheme: BoardTheme,
     pieceTheme: PieceTheme,
+    previewTarget: ThemePreviewTarget = ThemePreviewTarget.BOARD,
     isEquipped: Boolean = false,
     onApplyTheme: (BoardTheme, PieceTheme) -> Unit,
     onBack: () -> Unit
 ) {
     var isFlipped by remember { mutableStateOf(false) }
     var previewState by remember(boardTheme, pieceTheme) { mutableStateOf(createInitialGameState()) }
+
+    val activeThemeName = if (previewTarget == ThemePreviewTarget.BOARD) boardTheme.name else pieceTheme.name
+    val activeThemeDescription = if (previewTarget == ThemePreviewTarget.BOARD) boardTheme.description else pieceTheme.description
+    val categoryLabel = if (previewTarget == ThemePreviewTarget.BOARD) "BOARD THEME" else "PIECE THEME"
+    val pairedDetail = if (previewTarget == ThemePreviewTarget.BOARD) {
+        "Pieces: ${pieceTheme.name} (${pieceTheme.subtitle})"
+    } else {
+        "Board: ${boardTheme.name} (${boardTheme.subtitle})"
+    }
 
     Box(
         modifier = Modifier
@@ -61,20 +73,22 @@ fun ThemePreviewScreen(
                     radius = 1200f
                 )
             )
-            .padding(16.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Header Bar
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+            // Header Bar with centered title and safe-area margins
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 4.dp, bottom = 6.dp)
+                    .height(48.dp),
+                contentAlignment = Alignment.Center
             ) {
                 IconButton(
                     onClick = {
@@ -82,7 +96,8 @@ fun ThemePreviewScreen(
                         onBack()
                     },
                     modifier = Modifier
-                        .size(42.dp)
+                        .align(Alignment.CenterStart)
+                        .size(40.dp)
                         .clip(CircleShape)
                         .background(Color(0x22FFFFFF))
                 ) {
@@ -91,15 +106,15 @@ fun ThemePreviewScreen(
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "THEME DETAIL",
-                        fontSize = 18.sp,
+                        text = "THEME PREVIEW",
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 2.sp,
                         color = StudyParchmentCream
                     )
                     Text(
-                        text = "Tabletop Examination Room",
-                        fontSize = 11.sp,
+                        text = if (previewTarget == ThemePreviewTarget.BOARD) "Board Showcase" else "Piece Set Showcase",
+                        fontSize = 10.sp,
                         color = StudyAmberAccent
                     )
                 }
@@ -110,13 +125,16 @@ fun ThemePreviewScreen(
                         isFlipped = !isFlipped
                     },
                     modifier = Modifier
-                        .size(42.dp)
+                        .align(Alignment.CenterEnd)
+                        .size(40.dp)
                         .clip(CircleShape)
                         .background(Color(0x22FFFFFF))
                 ) {
-                    Text("⟲", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = StudyParchmentCream)
+                    Text("⟲", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = StudyParchmentCream)
                 }
             }
+
+            Spacer(modifier = Modifier.height(6.dp))
 
             // Theme Spec Card with Equipped status and Material / Style info
             Box(
@@ -133,18 +151,32 @@ fun ThemePreviewScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
                             Text(
-                                text = boardTheme.name.uppercase(),
-                                fontSize = 14.sp,
+                                text = activeThemeName.uppercase(),
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Black,
                                 color = StudyParchmentCream
                             )
-                            Text(
-                                text = boardTheme.description,
-                                fontSize = 11.sp,
-                                color = Color(0xFFC4B5A5)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(Color(0x33DFB36E))
+                                    .border(0.8.dp, StudyAmberAccent, RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = categoryLabel,
+                                    fontSize = 8.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.8.sp,
+                                    color = StudyAmberAccent
+                                )
+                            }
                         }
 
                         if (isEquipped) {
@@ -152,10 +184,10 @@ fun ThemePreviewScreen(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
                                     .background(StudyAmberAccent)
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
                             ) {
                                 Text(
-                                    text = "CURRENTLY EQUIPPED",
+                                    text = "EQUIPPED ✓",
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Black,
                                     letterSpacing = 0.8.sp,
@@ -165,25 +197,23 @@ fun ThemePreviewScreen(
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = activeThemeDescription,
+                        fontSize = 11.5.sp,
+                        color = Color(0xFFC4B5A5),
+                        lineHeight = 15.sp
+                    )
+
                     Spacer(modifier = Modifier.height(6.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Piece Set: ${pieceTheme.name}",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = StudyAmberAccent
-                        )
-                        Text(
-                            text = pieceTheme.subtitle,
-                            fontSize = 10.sp,
-                            color = Color(0xFFA89F95)
-                        )
-                    }
+                    Text(
+                        text = pairedDetail,
+                        fontSize = 10.5.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = StudyAmberAccent
+                    )
                 }
             }
 
@@ -214,7 +244,7 @@ fun ThemePreviewScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Test interaction guide & Reset
             Row(
@@ -242,7 +272,7 @@ fun ThemePreviewScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             // Apply / Equipped Button
             Button(
@@ -262,7 +292,7 @@ fun ThemePreviewScreen(
             ) {
                 Text(
                     text = if (isEquipped) "CURRENTLY EQUIPPED ✓" else "USE THIS THEME",
-                    fontSize = 14.sp,
+                    fontSize = 13.5.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 1.5.sp,
                     color = if (isEquipped) StudyAmberAccent else Color(0xFF1B1309)

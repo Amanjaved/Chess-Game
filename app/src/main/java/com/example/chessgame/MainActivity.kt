@@ -3,6 +3,7 @@ package com.example.chessgame
 import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.Crossfade
@@ -50,8 +51,33 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color(0xFF080A0D)
                 ) {
-                    var currentScreen by remember { mutableStateOf(Screen.INTRO) }
-                    var previousScreen by remember { mutableStateOf(Screen.MENU) }
+                    // True Jetpack Compose navigation back-stack
+                    val backStack = remember { mutableStateListOf(Screen.INTRO) }
+                    val currentScreen = backStack.lastOrNull() ?: Screen.MENU
+
+                    fun navigateTo(screen: Screen) {
+                        if (screen == Screen.MENU && backStack.size == 1 && backStack.first() == Screen.INTRO) {
+                            backStack.clear()
+                            backStack.add(Screen.MENU)
+                        } else {
+                            backStack.add(screen)
+                        }
+                    }
+
+                    fun navigateBack(): Boolean {
+                        if (backStack.size > 1) {
+                            backStack.removeAt(backStack.size - 1)
+                            return true
+                        }
+                        return false
+                    }
+
+                    // System Back gesture/button handling
+                    // Disabled when at root (Screen.MENU) so Android standard back behavior exits the app
+                    BackHandler(enabled = backStack.size > 1) {
+                        navigateBack()
+                    }
+
                     var gameMode by remember { mutableStateOf("ai") }
                     var aiDifficulty by remember { mutableStateOf(AIDifficulty.MEDIUM) }
                     var humanColor by remember { mutableStateOf(PieceColor.WHITE) }
@@ -96,9 +122,10 @@ class MainActivity : ComponentActivity() {
                         mutableStateOf(ThemeRegistry.findPieceTheme(pieceId) ?: ThemeRegistry.STORYBOOK_HANDCRAFTED)
                     }
 
-                    // Temporary themes for ThemePreviewScreen
+                    // Temporary preview states for ThemePreviewScreen
                     var previewBoardTheme by remember { mutableStateOf(currentBoardTheme) }
                     var previewPieceTheme by remember { mutableStateOf(currentPieceTheme) }
+                    var previewTarget by remember { mutableStateOf(ThemePreviewTarget.BOARD) }
 
                     var showMenuSettingsDialog by remember { mutableStateOf(false) }
                     var showMenuHowToPlayDialog by remember { mutableStateOf(false) }
@@ -132,41 +159,153 @@ class MainActivity : ComponentActivity() {
 
                     Crossfade(
                         targetState = currentScreen,
-                        animationSpec = tween(350),
+                        animationSpec = tween(300),
                         label = "screen_crossfade"
                     ) { screen ->
                         when (screen) {
                             Screen.INTRO -> {
-                                IntroScreen(onFinish = { currentScreen = Screen.MENU })
+                                IntroScreen(onFinish = { navigateTo(Screen.MENU) })
                             }
 
-                        Screen.MENU -> {
-                            MainMenuScreen(
-                                onPlayAI = { currentScreen = Screen.AI_DIFFICULTY },
-                                onPlayLocal = { currentScreen = Screen.LOCAL_SETUP },
-                                onOpenAnalysis = {
-                                    if (analysisMoves.isEmpty()) {
-                                        analysisMoves = com.example.chessgame.ai.GameAnalyzer.createSampleOperaGame()
-                                        analysisOutcome = GameOutcome(
-                                            isOver = true,
-                                            winner = PieceColor.WHITE,
-                                            reason = OutcomeReason.CHECKMATE
-                                        )
-                                        analysisOpponent = "Duke & Count"
-                                        analysisDifficulty = AIDifficulty.HARD
-                                        analysisDuration = 420
-                                        analysisPlayerColor = PieceColor.WHITE
-                                    }
-                                    previousScreen = Screen.MENU
-                                    currentScreen = Screen.GAME_ANALYSIS
-                                },
-                                onOpenThemes = { currentScreen = Screen.THEME_GALLERY },
-                                onOpenHowToPlay = { showMenuHowToPlayDialog = true },
-                                onOpenSettings = { showMenuSettingsDialog = true }
-                            )
+                            Screen.MENU -> {
+                                MainMenuScreen(
+                                    onPlayAI = { navigateTo(Screen.AI_DIFFICULTY) },
+                                    onPlayLocal = { navigateTo(Screen.LOCAL_SETUP) },
+                                    onOpenAnalysis = {
+                                        if (analysisMoves.isEmpty()) {
+                                            analysisMoves = com.example.chessgame.ai.GameAnalyzer.createSampleOperaGame()
+                                            analysisOutcome = GameOutcome(
+                                                isOver = true,
+                                                winner = PieceColor.WHITE,
+                                                reason = OutcomeReason.CHECKMATE
+                                            )
+                                            analysisOpponent = "Duke & Count"
+                                            analysisDifficulty = AIDifficulty.HARD
+                                            analysisDuration = 420
+                                            analysisPlayerColor = PieceColor.WHITE
+                                        }
+                                        navigateTo(Screen.GAME_ANALYSIS)
+                                    },
+                                    onOpenThemes = { navigateTo(Screen.THEME_GALLERY) },
+                                    onOpenHowToPlay = { showMenuHowToPlayDialog = true },
+                                    onOpenSettings = { showMenuSettingsDialog = true }
+                                )
 
-                            if (showMenuSettingsDialog) {
-                                SettingsDialog(
+                                if (showMenuSettingsDialog) {
+                                    SettingsDialog(
+                                        soundEnabled = soundEnabled,
+                                        onSoundChanged = { soundEnabled = it },
+                                        voiceEnabled = voiceEnabled,
+                                        onVoiceChanged = { voiceEnabled = it },
+                                        showCoords = showCoords,
+                                        onShowCoordsChanged = { showCoords = it },
+                                        highlightMoves = highlightMoves,
+                                        onHighlightMovesChanged = { highlightMoves = it },
+                                        autoFlipLocal = autoFlipLocal,
+                                        onAutoFlipChanged = { autoFlipLocal = it },
+                                        showMoveHints = showMoveHints,
+                                        onShowMoveHintsChanged = { showMoveHints = it },
+                                        currentBoardTheme = currentBoardTheme,
+                                        currentPieceTheme = currentPieceTheme,
+                                        onOpenThemes = {
+                                            showMenuSettingsDialog = false
+                                            navigateTo(Screen.THEME_GALLERY)
+                                        },
+                                        onClose = { showMenuSettingsDialog = false }
+                                    )
+                                }
+
+                                if (showMenuHowToPlayDialog) {
+                                    HowToPlayDialog(
+                                        pieceTheme = currentPieceTheme,
+                                        onClose = { showMenuHowToPlayDialog = false }
+                                    )
+                                }
+                            }
+
+                            Screen.AI_DIFFICULTY -> {
+                                AISetupScreen(
+                                    onBack = { navigateBack() },
+                                    onSelectDifficulty = { diff ->
+                                        aiDifficulty = diff
+                                        navigateTo(Screen.COLOR_SELECT)
+                                    }
+                                )
+                            }
+
+                            Screen.COLOR_SELECT -> {
+                                ColorSelectScreen(
+                                    pieceTheme = currentPieceTheme,
+                                    onBack = { navigateBack() },
+                                    onStartGame = { colorChoice ->
+                                        gameMode = "ai"
+                                        humanColor = when (colorChoice) {
+                                            PlayerColorChoice.WHITE -> PieceColor.WHITE
+                                            PlayerColorChoice.BLACK -> PieceColor.BLACK
+                                            PlayerColorChoice.RANDOM -> if (Random.nextBoolean()) PieceColor.WHITE else PieceColor.BLACK
+                                        }
+                                        // Clear setup steps from backStack so back from game returns cleanly to Menu
+                                        backStack.removeAll { it == Screen.AI_DIFFICULTY || it == Screen.COLOR_SELECT }
+                                        navigateTo(Screen.GAME)
+                                    }
+                                )
+                            }
+
+                            Screen.LOCAL_SETUP -> {
+                                LocalSetupScreen(
+                                    pieceTheme = currentPieceTheme,
+                                    onBack = { navigateBack() },
+                                    onStartMatch = { p1, p2 ->
+                                        gameMode = "local"
+                                        humanColor = PieceColor.WHITE
+                                        localPlayer1Name = p1
+                                        localPlayer2Name = p2
+                                        backStack.removeAll { it == Screen.LOCAL_SETUP }
+                                        navigateTo(Screen.GAME)
+                                    }
+                                )
+                            }
+
+                            Screen.THEME_GALLERY -> {
+                                ThemeGalleryScreen(
+                                    currentBoardTheme = currentBoardTheme,
+                                    currentPieceTheme = currentPieceTheme,
+                                    onSelectBoardTheme = { currentBoardTheme = it },
+                                    onSelectPieceTheme = { currentPieceTheme = it },
+                                    onPreviewTheme = { board, piece, target ->
+                                        previewBoardTheme = board
+                                        previewPieceTheme = piece
+                                        previewTarget = target
+                                        navigateTo(Screen.THEME_PREVIEW)
+                                    },
+                                    onBack = { navigateBack() }
+                                )
+                            }
+
+                            Screen.THEME_PREVIEW -> {
+                                ThemePreviewScreen(
+                                    boardTheme = previewBoardTheme,
+                                    pieceTheme = previewPieceTheme,
+                                    previewTarget = previewTarget,
+                                    isEquipped = if (previewTarget == ThemePreviewTarget.BOARD) {
+                                        previewBoardTheme.id == currentBoardTheme.id
+                                    } else {
+                                        previewPieceTheme.id == currentPieceTheme.id
+                                    },
+                                    onApplyTheme = { board, piece ->
+                                        currentBoardTheme = board
+                                        currentPieceTheme = piece
+                                        navigateBack()
+                                    },
+                                    onBack = { navigateBack() }
+                                )
+                            }
+
+                            Screen.GAME -> {
+                                GameScreen(
+                                    mode = gameMode,
+                                    aiDifficulty = aiDifficulty,
+                                    humanColor = humanColor,
                                     soundEnabled = soundEnabled,
                                     onSoundChanged = { soundEnabled = it },
                                     voiceEnabled = voiceEnabled,
@@ -181,145 +320,40 @@ class MainActivity : ComponentActivity() {
                                     onShowMoveHintsChanged = { showMoveHints = it },
                                     currentBoardTheme = currentBoardTheme,
                                     currentPieceTheme = currentPieceTheme,
-                                    onOpenThemes = {
-                                        showMenuSettingsDialog = false
-                                        currentScreen = Screen.THEME_GALLERY
-                                    },
-                                    onClose = { showMenuSettingsDialog = false }
-                                )
-                            }
-
-                            if (showMenuHowToPlayDialog) {
-                                HowToPlayDialog(
-                                    pieceTheme = currentPieceTheme,
-                                    onClose = { showMenuHowToPlayDialog = false }
-                                )
-                            }
-                        }
-
-                        Screen.AI_DIFFICULTY -> {
-                            AISetupScreen(
-                                onBack = { currentScreen = Screen.MENU },
-                                onSelectDifficulty = { diff ->
-                                    aiDifficulty = diff
-                                    currentScreen = Screen.COLOR_SELECT
-                                }
-                            )
-                        }
-
-                        Screen.COLOR_SELECT -> {
-                            ColorSelectScreen(
-                                pieceTheme = currentPieceTheme,
-                                onBack = { currentScreen = Screen.AI_DIFFICULTY },
-                                onStartGame = { colorChoice ->
-                                    gameMode = "ai"
-                                    humanColor = when (colorChoice) {
-                                        PlayerColorChoice.WHITE -> PieceColor.WHITE
-                                        PlayerColorChoice.BLACK -> PieceColor.BLACK
-                                        PlayerColorChoice.RANDOM -> if (Random.nextBoolean()) PieceColor.WHITE else PieceColor.BLACK
+                                    onOpenThemeGallery = { navigateTo(Screen.THEME_GALLERY) },
+                                    onBackToMenu = { navigateBack() },
+                                    player1Name = localPlayer1Name,
+                                    player2Name = localPlayer2Name,
+                                    onAnalyseGame = { moves, outcome, duration, opp, diff, color ->
+                                        analysisMoves = moves
+                                        analysisOutcome = outcome
+                                        analysisDuration = duration
+                                        analysisOpponent = opp
+                                        analysisDifficulty = diff
+                                        analysisPlayerColor = color
+                                        navigateTo(Screen.GAME_ANALYSIS)
                                     }
-                                    currentScreen = Screen.GAME
-                                }
-                            )
-                        }
+                                )
+                            }
 
-                        Screen.LOCAL_SETUP -> {
-                            LocalSetupScreen(
-                                pieceTheme = currentPieceTheme,
-                                onBack = { currentScreen = Screen.MENU },
-                                onStartMatch = { p1, p2 ->
-                                    gameMode = "local"
-                                    humanColor = PieceColor.WHITE
-                                    localPlayer1Name = p1
-                                    localPlayer2Name = p2
-                                    currentScreen = Screen.GAME
-                                }
-                            )
-                        }
-
-                        Screen.THEME_GALLERY -> {
-                            ThemeGalleryScreen(
-                                currentBoardTheme = currentBoardTheme,
-                                currentPieceTheme = currentPieceTheme,
-                                onSelectBoardTheme = { currentBoardTheme = it },
-                                onSelectPieceTheme = { currentPieceTheme = it },
-                                onPreviewTheme = { board, piece ->
-                                    previewBoardTheme = board
-                                    previewPieceTheme = piece
-                                    currentScreen = Screen.THEME_PREVIEW
-                                },
-                                onBack = { currentScreen = Screen.MENU }
-                            )
-                        }
-
-                        Screen.THEME_PREVIEW -> {
-                            ThemePreviewScreen(
-                                boardTheme = previewBoardTheme,
-                                pieceTheme = previewPieceTheme,
-                                isEquipped = previewBoardTheme.id == currentBoardTheme.id && previewPieceTheme.id == currentPieceTheme.id,
-                                onApplyTheme = { board, piece ->
-                                    currentBoardTheme = board
-                                    currentPieceTheme = piece
-                                    currentScreen = Screen.THEME_GALLERY
-                                },
-                                onBack = { currentScreen = Screen.THEME_GALLERY }
-                            )
-                        }
-
-                        Screen.GAME -> {
-                            GameScreen(
-                                mode = gameMode,
-                                aiDifficulty = aiDifficulty,
-                                humanColor = humanColor,
-                                soundEnabled = soundEnabled,
-                                onSoundChanged = { soundEnabled = it },
-                                voiceEnabled = voiceEnabled,
-                                onVoiceChanged = { voiceEnabled = it },
-                                showCoords = showCoords,
-                                onShowCoordsChanged = { showCoords = it },
-                                highlightMoves = highlightMoves,
-                                onHighlightMovesChanged = { highlightMoves = it },
-                                autoFlipLocal = autoFlipLocal,
-                                onAutoFlipChanged = { autoFlipLocal = it },
-                                showMoveHints = showMoveHints,
-                                onShowMoveHintsChanged = { showMoveHints = it },
-                                currentBoardTheme = currentBoardTheme,
-                                currentPieceTheme = currentPieceTheme,
-                                onOpenThemeGallery = { currentScreen = Screen.THEME_GALLERY },
-                                onBackToMenu = { currentScreen = Screen.MENU },
-                                player1Name = localPlayer1Name,
-                                player2Name = localPlayer2Name,
-                                onAnalyseGame = { moves, outcome, duration, opp, diff, color ->
-                                    analysisMoves = moves
-                                    analysisOutcome = outcome
-                                    analysisDuration = duration
-                                    analysisOpponent = opp
-                                    analysisDifficulty = diff
-                                    analysisPlayerColor = color
-                                    previousScreen = Screen.GAME
-                                    currentScreen = Screen.GAME_ANALYSIS
-                                }
-                            )
-                        }
-
-                        Screen.GAME_ANALYSIS -> {
-                            GameAnalysisScreen(
-                                moves = analysisMoves,
-                                outcome = analysisOutcome,
-                                opponentName = analysisOpponent,
-                                difficulty = analysisDifficulty,
-                                gameDurationSeconds = analysisDuration,
-                                humanColor = analysisPlayerColor,
-                                boardTheme = currentBoardTheme,
-                                pieceTheme = currentPieceTheme,
-                                onBack = { currentScreen = previousScreen }
-                            )
+                            Screen.GAME_ANALYSIS -> {
+                                GameAnalysisScreen(
+                                    moves = analysisMoves,
+                                    outcome = analysisOutcome,
+                                    opponentName = analysisOpponent,
+                                    difficulty = analysisDifficulty,
+                                    gameDurationSeconds = analysisDuration,
+                                    humanColor = analysisPlayerColor,
+                                    boardTheme = currentBoardTheme,
+                                    pieceTheme = currentPieceTheme,
+                                    onBack = { navigateBack() }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-    }
     }
 
     override fun onDestroy() {
