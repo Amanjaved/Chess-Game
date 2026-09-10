@@ -420,14 +420,9 @@ fun GameScreen(
                 contentAlignment = Alignment.Center
             ) {
                 // Left: Back button
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .size(38.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(ArenaColors.TitaniumSurface)
-                        .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(10.dp))
-                        .clickable {
+                Box(modifier = Modifier.align(Alignment.CenterStart)) {
+                    RoyalGameIconButton(
+                        onClick = {
                             SoundManager.playClick()
                             if (gameState.history.isNotEmpty() && !outcome.isOver) {
                                 confirmDialogType = "back"
@@ -435,86 +430,68 @@ fun GameScreen(
                                 onBackToMenu()
                             }
                         },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "←",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Black,
-                        color = ArenaColors.TextPrimary
+                        size = 38.dp,
+                        iconGlyph = "◀",
+                        glyphSize = 15.sp,
+                        contentDescription = "Back"
                     )
                 }
 
-                // Center: Emblem + CHESS ARENA + TACTICAL COMBAT PROTOCOL
+                // Center: Emblem + CHESS + Mode
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
                             painter = painterResource(id = R.drawable.logo_game_emblem),
                             contentDescription = null,
-                            modifier = Modifier.size(16.dp).clip(CircleShape)
+                            modifier = Modifier.size(18.dp).clip(CircleShape)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "CHESS ARENA",
-                            fontSize = 15.sp,
+                            text = "CHESS",
+                            fontSize = 17.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 2.5.sp,
+                            letterSpacing = 3.sp,
                             fontFamily = FontFamily.Serif,
-                            color = ArenaColors.TextPrimary
+                            color = ArenaColors.RoyalGoldBright
                         )
                     }
                     Text(
-                        text = if (isAIMode) "SOLO COMBAT PROTOCOL" else "DUEL PASS & PLAY",
-                        fontSize = 8.5.sp,
+                        text = if (isAIMode) "VS COMPUTER • ${aiDifficulty.name}" else "PASS & PLAY • 2 PLAYERS",
+                        fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.1.sp,
-                        color = ArenaColors.CyberCyan
+                        letterSpacing = 1.sp,
+                        color = ArenaColors.TextSecondary
                     )
                 }
 
-                // Right: Settings [ ⚙️ ] and Pause/More [ ••• ]
+                // Right: Settings [ ⚙️ ] and Menu [ ☰ ]
                 Row(
                     modifier = Modifier.align(Alignment.CenterEnd),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Settings button
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(ArenaColors.TitaniumSurface)
-                            .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(10.dp))
-                            .clickable {
-                                SoundManager.playClick()
-                                showSettingsDialog = true
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("⚙️", fontSize = 15.sp)
-                    }
+                    RoyalGameIconButton(
+                        onClick = {
+                            SoundManager.playClick()
+                            showSettingsDialog = true
+                        },
+                        size = 38.dp,
+                        iconRes = R.drawable.icon_settings_game,
+                        contentDescription = "Settings"
+                    )
 
-                    // Tactical Pause / More button
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(ArenaColors.TitaniumSurface)
-                            .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(10.dp))
-                            .clickable {
-                                SoundManager.playClick()
-                                showGamePauseMenu = true
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "•••",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Black,
-                            color = ArenaColors.TextPrimary
-                        )
-                    }
+                    RoyalGameIconButton(
+                        onClick = {
+                            SoundManager.playClick()
+                            showGamePauseMenu = true
+                        },
+                        size = 38.dp,
+                        iconGlyph = "☰",
+                        glyphSize = 17.sp,
+                        contentDescription = "Menu"
+                    )
                 }
+
             }
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -1077,26 +1054,27 @@ private fun GameControlPill(
 ) {
     Box(
         modifier = modifier
-            .height(38.dp)
-            .shadow(if (isActive) 6.dp else 1.dp, RoundedCornerShape(19.dp), spotColor = ArenaColors.CyberCyan)
-            .clip(RoundedCornerShape(19.dp))
+            .height(40.dp)
+            .shadow(if (isActive) 8.dp else 2.dp, RoundedCornerShape(20.dp), spotColor = Color(0x66FFD700))
+            .clip(RoundedCornerShape(20.dp))
             .background(
                 if (isActive) {
                     Brush.verticalGradient(
-                        listOf(ArenaColors.CyberCyan, Color(0xFF0098A6))
+                        listOf(ArenaColors.RoyalGold, ArenaColors.RoyalGoldDark)
                     )
                 } else {
                     Brush.verticalGradient(
-                        listOf(ArenaColors.TitaniumSurface, ArenaColors.TitaniumSurface)
+                        listOf(ArenaColors.TitaniumSurfaceRaised, ArenaColors.TitaniumSurface)
                     )
                 }
             )
             .border(
-                width = 1.dp,
-                color = if (isActive) ArenaColors.CyberCyan else ArenaColors.TitaniumBorder,
-                shape = RoundedCornerShape(19.dp)
+                width = 1.2.dp,
+                color = if (isActive) ArenaColors.RoyalGoldBright else ArenaColors.TitaniumBorder,
+                shape = RoundedCornerShape(20.dp)
             )
             .clickable(enabled = enabled) {
+                SoundManager.playClick()
                 onClick()
             }
             .padding(horizontal = 8.dp),
@@ -1108,18 +1086,19 @@ private fun GameControlPill(
         ) {
             Text(
                 text = icon,
-                fontSize = 11.5.sp,
-                color = if (isActive) Color(0xFF06090F) else if (enabled) ArenaColors.TextPrimary else Color(0x55FFFFFF)
+                fontSize = 13.sp,
+                color = if (isActive) Color(0xFF080D18) else if (enabled) ArenaColors.RoyalGold else Color(0x55FFFFFF)
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = label,
-                fontSize = 10.5.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isActive) Color(0xFF06090F) else if (enabled) ArenaColors.TextPrimary else Color(0x55FFFFFF),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Black,
+                color = if (isActive) Color(0xFF080D18) else if (enabled) ArenaColors.TextPrimary else Color(0x55FFFFFF),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
     }
 }
+

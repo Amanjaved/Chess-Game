@@ -62,8 +62,8 @@ fun ColorSelectScreen(
             ) {
                 // Header
                 ArenaHeader(
-                    title = "DEPLOYMENT FACTION",
-                    subtitle = "SELECT YOUR ARMY",
+                    title = "CHOOSE YOUR COLOR",
+                    subtitle = "PLAY AS WHITE OR BLACK",
                     onBack = onBack
                 )
 
@@ -76,13 +76,13 @@ fun ColorSelectScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    // Faction 1: WHITE LEGION
+                    // Choice 1: WHITE PIECES
                     val isWhiteSelected = selectedChoice == PlayerColorChoice.WHITE
                     ArenaCard(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(18.dp),
                         isHighlighted = isWhiteSelected,
-                        highlightColor = ArenaColors.CyberCyan,
+                        highlightColor = ArenaColors.RoyalGold,
                         onClick = {
                             selectedChoice = PlayerColorChoice.WHITE
                         }
@@ -101,13 +101,13 @@ fun ColorSelectScreen(
                                     .shadow(
                                         elevation = if (isWhiteSelected) 10.dp else 2.dp,
                                         shape = RoundedCornerShape(14.dp),
-                                        spotColor = ArenaColors.CyberCyan
+                                        spotColor = ArenaColors.RoyalGold
                                     )
                                     .clip(RoundedCornerShape(14.dp))
                                     .background(Color(0xFF1B2838))
                                     .border(
                                         width = if (isWhiteSelected) 1.8.dp else 1.dp,
-                                        color = if (isWhiteSelected) ArenaColors.CyberCyan else ArenaColors.TitaniumBorder,
+                                        color = if (isWhiteSelected) ArenaColors.RoyalGold else ArenaColors.TitaniumBorder,
                                         shape = RoundedCornerShape(14.dp)
                                     )
                             ) {
@@ -128,7 +128,7 @@ fun ColorSelectScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
-                                        text = "WHITE LEGION",
+                                        text = "WHITE PIECES",
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Black,
                                         letterSpacing = 1.sp,
@@ -136,7 +136,7 @@ fun ColorSelectScreen(
                                     )
                                     ArenaBadge(
                                         text = "MOVES FIRST",
-                                        color = ArenaColors.CyberCyan,
+                                        color = ArenaColors.RoyalGold,
                                         fontSize = 8
                                     )
                                 }
@@ -144,7 +144,7 @@ fun ColorSelectScreen(
                                 Spacer(modifier = Modifier.height(4.dp))
 
                                 Text(
-                                    text = "Command the frontline. Seize tempo with first move initiative and dictate the pace of the match.",
+                                    text = "Command the white pieces. Seize the opening tempo and lead the initial attack.",
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp,
                                     color = ArenaColors.TextSecondary
@@ -153,7 +153,7 @@ fun ColorSelectScreen(
                         }
                     }
 
-                    // Faction 2: BLACK DYNASTY
+                    // Choice 2: BLACK PIECES
                     val isBlackSelected = selectedChoice == PlayerColorChoice.BLACK
                     ArenaCard(
                         modifier = Modifier.fillMaxWidth(),
@@ -205,14 +205,14 @@ fun ColorSelectScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
-                                        text = "BLACK DYNASTY",
+                                        text = "BLACK PIECES",
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Black,
                                         letterSpacing = 1.sp,
                                         color = ArenaColors.TextPrimary
                                     )
                                     ArenaBadge(
-                                        text = "COUNTER-ATTACK",
+                                        text = "MOVES SECOND",
                                         color = ArenaColors.SolarAmber,
                                         fontSize = 8
                                     )
@@ -221,7 +221,7 @@ fun ColorSelectScreen(
                                 Spacer(modifier = Modifier.height(4.dp))
 
                                 Text(
-                                    text = "Lay tactical traps and counter enemy advances. Strike ruthlessly when the opponent overextends.",
+                                    text = "Command the black pieces. Play solid defenses and launch sharp counterattacks.",
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp,
                                     color = ArenaColors.TextSecondary
@@ -230,7 +230,7 @@ fun ColorSelectScreen(
                         }
                     }
 
-                    // Faction 3: FACTION FATE (RANDOM)
+                    // Choice 3: RANDOM
                     val isRandomSelected = selectedChoice == PlayerColorChoice.RANDOM
                     ArenaCard(
                         modifier = Modifier.fillMaxWidth(),
@@ -280,7 +280,7 @@ fun ColorSelectScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
-                                        text = "FACTION FATE",
+                                        text = "RANDOM COLOR",
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Black,
                                         letterSpacing = 1.sp,
@@ -296,7 +296,7 @@ fun ColorSelectScreen(
                                 Spacer(modifier = Modifier.height(4.dp))
 
                                 Text(
-                                    text = "Trust your tactical mastery to destiny. Color is determined randomly at match launch.",
+                                    text = "Color is determined randomly at match start. Sharpen your skills from either perspective.",
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp,
                                     color = ArenaColors.TextSecondary
@@ -308,10 +308,10 @@ fun ColorSelectScreen(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Deploy Button
+                // Start Game Button
                 ArenaButton(
-                    text = "DEPLOY TO BATTLE",
-                    icon = "⚔️",
+                    text = "START CHESS MATCH",
+                    icon = "▶",
                     onClick = {
                         onStartGame(selectedChoice)
                     },
@@ -320,6 +320,7 @@ fun ColorSelectScreen(
                         .fillMaxWidth()
                         .padding(bottom = 6.dp)
                 )
+
             }
         }
     }

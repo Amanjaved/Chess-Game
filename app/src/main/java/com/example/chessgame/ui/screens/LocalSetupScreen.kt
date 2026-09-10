@@ -113,21 +113,21 @@ fun LocalSetupScreen(
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Column {
                                         Text(
-                                            text = "COMMANDER 1",
+                                            text = "PLAYER 1",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Black,
                                             letterSpacing = 1.sp,
                                             color = ArenaColors.TextPrimary
                                         )
                                         Text(
-                                            text = "White Army • Moves First",
+                                            text = "White Pieces • Moves First",
                                             fontSize = 10.sp,
-                                            color = ArenaColors.CyberCyan
+                                            color = ArenaColors.RoyalGold
                                         )
                                     }
                                 }
 
-                                ArenaBadge(text = "INITIATIVE", color = ArenaColors.CyberCyan, fontSize = 8)
+                                ArenaBadge(text = "WHITE", color = ArenaColors.RoyalGold, fontSize = 8)
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))
@@ -136,15 +136,15 @@ fun LocalSetupScreen(
                                 value = p1Name,
                                 onValueChange = { if (it.length <= 16) p1Name = it },
                                 singleLine = true,
-                                label = { Text("Codename / Name", fontSize = 11.sp, color = ArenaColors.TextSecondary) },
+                                label = { Text("Player 1 Name", fontSize = 11.sp, color = ArenaColors.TextSecondary) },
                                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedTextColor = ArenaColors.TextPrimary,
                                     unfocusedTextColor = ArenaColors.TextPrimary,
-                                    focusedBorderColor = ArenaColors.CyberCyan,
+                                    focusedBorderColor = ArenaColors.RoyalGold,
                                     unfocusedBorderColor = ArenaColors.TitaniumBorder,
-                                    focusedContainerColor = Color(0xFF101722),
-                                    unfocusedContainerColor = Color(0xFF0F151E)
+                                    focusedContainerColor = Color(0xFF131D2E),
+                                    unfocusedContainerColor = Color(0xFF0F1726)
                                 ),
                                 shape = RoundedCornerShape(10.dp),
                                 modifier = Modifier.fillMaxWidth()
@@ -152,13 +152,10 @@ fun LocalSetupScreen(
                         }
                     }
 
-                    // VS NEXUS DIVIDER
+                    // VS Divider
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                        modifier = Modifier.fillMaxWidth(0.9f),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
                             modifier = Modifier
@@ -175,10 +172,7 @@ fun LocalSetupScreen(
                                 .background(Color(0xFF1A2330))
                                 .border(1.dp, ArenaColors.SolarAmber, CircleShape)
                         ) {
-                            Text(
-                                text = "⚔️",
-                                fontSize = 16.sp
-                            )
+                            Text(text = "VS", fontSize = 12.sp, color = ArenaColors.TextSecondary)
                         }
                         Box(
                             modifier = Modifier
@@ -188,12 +182,12 @@ fun LocalSetupScreen(
                         )
                     }
 
-                    // COMMANDER 2: BLACK FACTION
+                    // PLAYER 2: BLACK
                     ArenaCard(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         isHighlighted = true,
-                        highlightColor = ArenaColors.CrimsonAlert
+                        highlightColor = ArenaColors.SolarAmber
                     ) {
                         Column(
                             modifier = Modifier
@@ -212,7 +206,7 @@ fun LocalSetupScreen(
                                             .size(46.dp)
                                             .clip(RoundedCornerShape(10.dp))
                                             .background(Color(0xFF281820))
-                                            .border(1.dp, ArenaColors.CrimsonAlert, RoundedCornerShape(10.dp))
+                                            .border(1.dp, ArenaColors.SolarAmber, RoundedCornerShape(10.dp))
                                     ) {
                                         PieceView(
                                             type = PieceType.KING,
@@ -224,21 +218,21 @@ fun LocalSetupScreen(
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Column {
                                         Text(
-                                            text = "COMMANDER 2",
+                                            text = "PLAYER 2",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Black,
                                             letterSpacing = 1.sp,
                                             color = ArenaColors.TextPrimary
                                         )
                                         Text(
-                                            text = "Black Army • Second to Move",
+                                            text = "Black Pieces • Moves Second",
                                             fontSize = 10.sp,
-                                            color = ArenaColors.CrimsonAlert
+                                            color = ArenaColors.SolarAmber
                                         )
                                     }
                                 }
 
-                                ArenaBadge(text = "DEFENDER", color = ArenaColors.CrimsonAlert, fontSize = 8)
+                                ArenaBadge(text = "BLACK", color = ArenaColors.SolarAmber, fontSize = 8)
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))
@@ -247,12 +241,12 @@ fun LocalSetupScreen(
                                 value = p2Name,
                                 onValueChange = { if (it.length <= 16) p2Name = it },
                                 singleLine = true,
-                                label = { Text("Codename / Name", fontSize = 11.sp, color = ArenaColors.TextSecondary) },
+                                label = { Text("Player 2 Name", fontSize = 11.sp, color = ArenaColors.TextSecondary) },
                                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedTextColor = ArenaColors.TextPrimary,
                                     unfocusedTextColor = ArenaColors.TextPrimary,
-                                    focusedBorderColor = ArenaColors.CrimsonAlert,
+                                    focusedBorderColor = ArenaColors.SolarAmber,
                                     unfocusedBorderColor = ArenaColors.TitaniumBorder,
                                     focusedContainerColor = Color(0xFF1C1318),
                                     unfocusedContainerColor = Color(0xFF170F14)
@@ -263,9 +257,9 @@ fun LocalSetupScreen(
                         }
                     }
 
-                    // Tactical Notice
+                    // Notice
                     Text(
-                        text = "Take turns on the same device. The board can auto-flip in Settings for face-to-face combat.",
+                        text = "Take turns on the same device. Tap Flip Board or enable auto-flip in Settings for face-to-face play.",
                         fontSize = 11.sp,
                         textAlign = TextAlign.Center,
                         color = ArenaColors.TextSecondary,
@@ -277,8 +271,8 @@ fun LocalSetupScreen(
 
                 // Start Match CTA
                 ArenaButton(
-                    text = "START DUEL",
-                    icon = "⚔️",
+                    text = "START CHESS MATCH",
+                    icon = "▶",
                     onClick = {
                         val n1 = p1Name.trim().ifEmpty { "Player 1" }
                         val n2 = p2Name.trim().ifEmpty { "Player 2" }

@@ -79,47 +79,47 @@ fun AISetupScreen(
         listOf(
             OpponentDossier(
                 difficulty = AIDifficulty.EASY,
-                name = "Cadet Valen",
-                title = "ACADEMY INITIATE",
-                style = "Aggressive • Fast • Bold",
-                rating = "850 ELO",
+                name = "Novice Alex",
+                title = "BEGINNER",
+                style = "Casual • Developing • Direct",
+                rating = "800 ELO",
                 stars = "★☆☆☆",
-                description = "An ambitious junior recruit eager to test tactical gambits and rapid attacks.",
+                description = "Practicing opening principles and basic tactics. Great for warm-ups and casual games.",
                 imageRes = R.drawable.avatar_opponent_recruit,
                 themeColor = ArenaColors.EmeraldVictory
             ),
             OpponentDossier(
                 difficulty = AIDifficulty.MEDIUM,
-                name = "Strategist Lyra",
-                title = "CYBER TACTICIAN",
-                style = "Balanced • Positional • Opportunistic",
+                name = "Club Player Maya",
+                title = "INTERMEDIATE",
+                style = "Tactical • Alert • Active",
                 rating = "1350 ELO",
                 stars = "★★☆☆",
-                description = "Disciplined battlefield analyst. Capitalizes on loose pieces and controls center files.",
+                description = "Sharp club competitor. Controls open files, creates tactical pins, and punishes mistakes.",
                 imageRes = R.drawable.avatar_opponent_tactician,
-                themeColor = ArenaColors.CyberCyan
+                themeColor = ArenaColors.RoyalGold
             ),
             OpponentDossier(
                 difficulty = AIDifficulty.HARD,
-                name = "Commander Voron",
-                title = "HEAVY WARMASTER",
-                style = "Relentless • Heavy Iron • Crushing",
+                name = "Master Viktor",
+                title = "ADVANCED",
+                style = "Strategic • Positional • Precise",
                 rating = "1850 ELO",
                 stars = "★★★☆",
-                description = "Battle-scarred master of positional warfare who launches decisive piece sacrifices.",
+                description = "Tournament veteran. Calculates deep piece trades, king safety, and sharp pawn structures.",
                 imageRes = R.drawable.avatar_opponent_warmaster,
-                themeColor = ArenaColors.CrimsonAlert
+                themeColor = ArenaColors.SolarAmber
             ),
             OpponentDossier(
                 difficulty = AIDifficulty.EXPERT,
-                name = "Oracle Kairos",
-                title = "GRANDMASTER TITAN",
-                style = "Omniscient • Infallible • Deep Minimax",
+                name = "Grandmaster Anton",
+                title = "GRANDMASTER",
+                style = "Flawless • Deep Calculation",
                 rating = "2400 ELO",
                 stars = "★★★★",
-                description = "Supreme chess intelligence calculating flawless deep tactical variations per turn.",
+                description = "World championship caliber AI searching multiple plies with supreme tactical accuracy.",
                 imageRes = R.drawable.avatar_opponent_grandmaster,
-                themeColor = ArenaColors.SolarAmber
+                themeColor = ArenaColors.CrimsonAlert
             )
         )
     }
@@ -141,10 +141,11 @@ fun AISetupScreen(
             ) {
                 // Header
                 ArenaHeader(
-                    title = "SELECT OPPONENT",
-                    subtitle = "BATTLE ARENA DOSSIER",
+                    title = "CHOOSE OPPONENT",
+                    subtitle = "COMPUTER DIFFICULTY",
                     onBack = onBack
                 )
+
 
                 Spacer(modifier = Modifier.height(6.dp))
 
@@ -258,7 +259,7 @@ fun AISetupScreen(
                 // Bottom Deploy CTA
                 val selectedDossier = opponents.first { it.difficulty == selectedDifficulty }
                 ArenaButton(
-                    text = "ENGAGE ${selectedDossier.name.uppercase()}",
+                    text = "CHALLENGE ${selectedDossier.name.uppercase()}",
                     icon = "⚔️",
                     onClick = {
                         onSelectDifficulty(selectedDifficulty)

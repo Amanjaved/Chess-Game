@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -44,41 +45,48 @@ import com.example.chessgame.audio.SoundManager
  */
 
 object ArenaColors {
-    // Backgrounds & Void
-    val VoidAbyss = Color(0xFF090D14)
-    val VoidDeep = Color(0xFF0B111A)
-    val VoidScrim = Color(0xF2070B10)
+    // Backgrounds & Void: Deep Royal Sapphire & Midnight Obsidian
+    val VoidAbyss = Color(0xFF080D18)
+    val VoidDeep = Color(0xFF0D1424)
+    val VoidScrim = Color(0xF2060A14)
 
-    // Titanium Surfaces
-    val TitaniumSurface = Color(0xFF131A24)
-    val TitaniumSurfaceRaised = Color(0xFF1A2433)
-    val TitaniumSurfaceHover = Color(0xFF233044)
-    val TitaniumBorder = Color(0xFF2B3A4F)
-    val TitaniumBorderSubtle = Color(0x354E6788)
+    // Regal Surfaces: Polished Sapphire & Obsidian with Gold Inlay
+    val TitaniumSurface = Color(0xFF121A2B)
+    val TitaniumSurfaceRaised = Color(0xFF182338)
+    val TitaniumSurfaceHover = Color(0xFF22304C)
+    val TitaniumBorder = Color(0x4DFFD700) // 30% Gold border
+    val TitaniumBorderSubtle = Color(0x26FFD700)
 
-    // High-Energy Game Accents
-    val CyberCyan = Color(0xFF00E5FF)
-    val CyberCyanDim = Color(0xFF00B0FF)
-    val CyberCyanGlow = Color(0x3300E5FF)
+    // Royal Gold & Jewel Accents
+    val RoyalGold = Color(0xFFFFD700)
+    val RoyalGoldBright = Color(0xFFFFE066)
+    val RoyalGoldDark = Color(0xFFC69214)
+    val RoyalGoldGlow = Color(0x33FFD700)
 
-    val SolarAmber = Color(0xFFFFAB00)
+    val CyberCyan = Color(0xFFFFD700) // Mapped to Royal Gold for uniform luxury
+    val CyberCyanDim = Color(0xFFE6B800)
+    val CyberCyanGlow = Color(0x33FFD700)
+
+    val SolarAmber = Color(0xFFFFB300)
     val SolarAmberBright = Color(0xFFFFD700)
-    val SolarAmberGlow = Color(0x33FFAB00)
+    val SolarAmberGlow = Color(0x33FFB300)
 
-    val CrimsonAlert = Color(0xFFFF3366)
-    val CrimsonGlow = Color(0x33FF3366)
+    val CrimsonAlert = Color(0xFFFF3355)
+    val CrimsonGlow = Color(0x33FF3355)
 
     val EmeraldVictory = Color(0xFF00E676)
     val EmeraldGlow = Color(0x3300E676)
 
-    val RoyalPurple = Color(0xFF9D4EDD)
+    val RoyalPurple = Color(0xFF8A2BE2)
+    val SapphireGem = Color(0xFF1E3A8A)
 
     // Typography & Ink
-    val TextPrimary = Color(0xFFF2F6FA)
-    val TextSecondary = Color(0xFF8C9BAE)
-    val TextMuted = Color(0xFF506175)
-    val TextDisabled = Color(0xFF384556)
+    val TextPrimary = Color(0xFFF8FAFC)
+    val TextSecondary = Color(0xFFCBD5E1)
+    val TextMuted = Color(0xFF94A3B8)
+    val TextDisabled = Color(0xFF64748B)
 }
+
 
 /**
  * Game Atmospheric Scaffold:
@@ -143,24 +151,16 @@ fun ArenaHeader(
     ) {
         // Left: Back Button
         if (onBack != null) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0x331C2636))
-                    .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(10.dp))
-                    .clickable {
+            Box(modifier = Modifier.align(Alignment.CenterStart)) {
+                RoyalGameIconButton(
+                    onClick = {
                         SoundManager.playClick()
                         onBack()
                     },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "←",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Black,
-                    color = ArenaColors.TextPrimary
+                    size = 40.dp,
+                    iconGlyph = "◀",
+                    glyphSize = 16.sp,
+                    contentDescription = "Back"
                 )
             }
         }
@@ -200,6 +200,80 @@ fun ArenaHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 content = rightContent
+            )
+        }
+    }
+}
+
+/**
+ * 3D Royal Game Icon Button:
+ * Used for Settings, Back, Hint, Undo, Flip, and action controls.
+ * Features an ornate circular gold bezel, deep sapphire gem interior,
+ * and optional drawable resource or icon text glyph.
+ */
+@Composable
+fun RoyalGameIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    size: Dp = 44.dp,
+    iconRes: Int? = null,
+    iconGlyph: String? = null,
+    glyphSize: androidx.compose.ui.unit.TextUnit = 20.sp,
+    contentDescription: String? = null
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scaleAnim by animateFloatAsState(
+        targetValue = if (isPressed) 0.90f else 1.0f,
+        animationSpec = tween(durationMillis = 100),
+        label = "royal_btn_press"
+    )
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(size)
+            .graphicsLayer {
+                scaleX = scaleAnim
+                scaleY = scaleAnim
+            }
+            .clip(CircleShape)
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF243B60),
+                        Color(0xFF132034),
+                        Color(0xFF09111D)
+                    )
+                )
+            )
+            .border(
+                width = 1.5.dp,
+                brush = Brush.sweepGradient(
+                    listOf(
+                        Color(0xFFFFD700),
+                        Color(0xFFFFB300),
+                        Color(0xFFFFF2A3),
+                        Color(0xFFFFD700)
+                    )
+                ),
+                shape = CircleShape
+            )
+    ) {
+        if (iconRes != null) {
+            Image(
+                painter = painterResource(id = iconRes),
+                contentDescription = contentDescription,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else if (iconGlyph != null) {
+            Text(
+                text = iconGlyph,
+                fontSize = glyphSize,
+                color = ArenaColors.RoyalGold,
+                fontWeight = FontWeight.Black
             )
         }
     }
