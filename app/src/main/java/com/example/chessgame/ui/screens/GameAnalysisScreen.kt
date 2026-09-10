@@ -1,5 +1,6 @@
 package com.example.chessgame.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -19,6 +20,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chessgame.ai.*
@@ -52,6 +54,8 @@ fun GameAnalysisScreen(
     pieceTheme: PieceTheme,
     onBack: () -> Unit
 ) {
+    BackHandler { onBack() }
+
     var activeTab by remember { mutableStateOf(AnalysisTab.SUMMARY) }
     var analysisReport by remember { mutableStateOf<GameAnalysisReport?>(null) }
     var analysisProgress by remember { mutableFloatStateOf(0f) }
@@ -108,8 +112,7 @@ fun GameAnalysisScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .statusBarsPadding()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .navigationBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -143,41 +146,40 @@ fun GameAnalysisScreen(
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Top Header Bar (Visually Centered)
-                Box(
+                // Top Header Bar
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
+                        .height(52.dp)
+                        .clip(RoundedCornerShape(14.dp))
                         .background(Color(0x22FFFFFF))
-                        .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    contentAlignment = Alignment.Center
+                        .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(14.dp))
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(
                         onClick = {
                             SoundManager.playClick()
                             onBack()
                         },
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .size(36.dp)
+                        modifier = Modifier.size(40.dp)
                     ) {
                         Text("←", fontSize = 20.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
                     }
 
                     Text(
                         text = "Game Analysis",
-                        fontSize = 17.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.sp,
-                        color = StudyParchmentCream
+                        color = StudyParchmentCream,
+                        textAlign = TextAlign.Center
                     )
 
                     IconButton(
                         onClick = { SoundManager.playClick() },
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .size(36.dp)
+                        modifier = Modifier.size(40.dp)
                     ) {
                         Text("☰", fontSize = 18.sp, color = StudyParchmentCream)
                     }

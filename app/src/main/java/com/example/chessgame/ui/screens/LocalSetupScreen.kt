@@ -1,5 +1,6 @@
 package com.example.chessgame.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -30,6 +31,8 @@ fun LocalSetupScreen(
     onBack: () -> Unit,
     onStartMatch: (player1Name: String, player2Name: String) -> Unit
 ) {
+    BackHandler { onBack() }
+
     var p1Name by remember { mutableStateOf("Player 1") }
     var p2Name by remember { mutableStateOf("Player 2") }
 
@@ -52,27 +55,28 @@ fun LocalSetupScreen(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Header (Visually Centered)
-            Box(
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                contentAlignment = Alignment.Center
+                    .height(52.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0x22FFFFFF))
+                    .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(14.dp))
+                    .padding(horizontal = 8.dp)
             ) {
                 IconButton(
                     onClick = {
                         SoundManager.playClick()
                         onBack()
                     },
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(Color(0x22FFFFFF))
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Text("←", fontSize = 20.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
                 }
@@ -80,17 +84,19 @@ fun LocalSetupScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "LOCAL 2 PLAYER",
-                        fontSize = 18.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp,
+                        letterSpacing = 1.5.sp,
                         color = StudyParchmentCream
                     )
                     Text(
                         text = "One board. Two minds.",
-                        fontSize = 11.5.sp,
+                        fontSize = 10.sp,
                         color = StudyAmberAccent
                     )
                 }
+
+                Spacer(modifier = Modifier.size(40.dp))
             }
 
             Spacer(modifier = Modifier.height(8.dp))

@@ -293,6 +293,7 @@ object ThemeRegistry {
         ARTISAN_WOOD,
         DARK_WALNUT,
         FOREST_GROVE,
+        MIDNIGHT_STUDY,
         OLD_LIBRARY,
         ROYAL_MARBLE,
         OCEAN_BREEZE,

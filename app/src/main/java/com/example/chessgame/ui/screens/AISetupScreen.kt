@@ -1,5 +1,6 @@
 package com.example.chessgame.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -63,6 +64,7 @@ fun AISetupScreen(
     onSelectDifficulty: (AIDifficulty) -> Unit,
     onStartGame: ((AIDifficulty, PlayerColorChoice) -> Unit)? = null
 ) {
+    BackHandler { onBack() }
     val coroutineScope = rememberCoroutineScope()
     var isNavigating by remember { mutableStateOf(false) }
 

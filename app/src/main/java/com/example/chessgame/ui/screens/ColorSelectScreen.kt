@@ -1,5 +1,6 @@
 package com.example.chessgame.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -37,6 +38,8 @@ fun ColorSelectScreen(
     onBack: () -> Unit,
     onStartGame: (PlayerColorChoice) -> Unit
 ) {
+    BackHandler { onBack() }
+
     var selectedChoice by remember { mutableStateOf(PlayerColorChoice.WHITE) }
 
     Box(
@@ -58,27 +61,28 @@ fun ColorSelectScreen(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Header (Visually Centered)
-            Box(
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                contentAlignment = Alignment.Center
+                    .height(52.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0x22FFFFFF))
+                    .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(14.dp))
+                    .padding(horizontal = 8.dp)
             ) {
                 IconButton(
                     onClick = {
                         SoundManager.playClick()
                         onBack()
                     },
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(Color(0x22FFFFFF))
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Text("←", fontSize = 20.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
                 }
@@ -86,17 +90,19 @@ fun ColorSelectScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "CHOOSE YOUR SIDE",
-                        fontSize = 18.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp,
+                        letterSpacing = 1.5.sp,
                         color = StudyParchmentCream
                     )
                     Text(
                         text = "White moves first, Black responds",
-                        fontSize = 11.sp,
+                        fontSize = 10.sp,
                         color = StudyAmberAccent
                     )
                 }
+
+                Spacer(modifier = Modifier.size(40.dp))
             }
 
             Spacer(modifier = Modifier.height(14.dp))

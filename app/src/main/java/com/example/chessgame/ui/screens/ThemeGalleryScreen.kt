@@ -1,6 +1,9 @@
 package com.example.chessgame.ui.screens
 
-import androidx.compose.foundation.Image
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,9 +24,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chessgame.audio.SoundManager
@@ -38,10 +40,9 @@ enum class ThemeTab {
 }
 
 /**
- * Dedicated Theme Gallery Screen.
- * Lets players independently choose and preview Board Themes and Piece Themes.
- * Features real miniature 8x8 board previews with actual assets, clear separation
- * between boards and pieces, and independent selection.
+ * Premium Theme Collection Screen.
+ * Fully decoupled architecture: players can independently choose and pair
+ * ANY board theme with ANY piece theme.
  */
 @Composable
 fun ThemeGalleryScreen(
@@ -49,9 +50,11 @@ fun ThemeGalleryScreen(
     currentPieceTheme: PieceTheme,
     onSelectBoardTheme: (BoardTheme) -> Unit,
     onSelectPieceTheme: (PieceTheme) -> Unit,
-    onPreviewTheme: (BoardTheme, PieceTheme, ThemePreviewTarget) -> Unit,
+    onPreviewTheme: (BoardTheme, PieceTheme) -> Unit,
     onBack: () -> Unit
 ) {
+    BackHandler { onBack() }
+
     var activeTab by remember { mutableStateOf(ThemeTab.BOARDS) }
 
     Box(
@@ -72,25 +75,28 @@ fun ThemeGalleryScreen(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 14.dp, vertical = 6.dp)
         ) {
-            // Header Bar with centered title
-            Box(
+            // ==========================================
+            // TOP HEADER BAR (Below Status Bar)
+            // ==========================================
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
-                contentAlignment = Alignment.Center
+                    .height(52.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0x22FFFFFF))
+                    .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(14.dp))
+                    .padding(horizontal = 8.dp)
             ) {
                 IconButton(
                     onClick = {
                         SoundManager.playClick()
                         onBack()
                     },
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color(0x22FFFFFF))
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Text("←", fontSize = 20.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
                 }
@@ -98,14 +104,14 @@ fun ThemeGalleryScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "THEME COLLECTION",
-                        fontSize = 18.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp,
+                        letterSpacing = 1.5.sp,
                         color = StudyParchmentCream
                     )
                     Text(
                         text = "Curated Boards & Handcrafted Pieces",
-                        fontSize = 10.5.sp,
+                        fontSize = 10.sp,
                         color = StudyAmberAccent
                     )
                 }
@@ -113,13 +119,9 @@ fun ThemeGalleryScreen(
                 IconButton(
                     onClick = {
                         SoundManager.playClick()
-                        onPreviewTheme(currentBoardTheme, currentPieceTheme, if (activeTab == ThemeTab.BOARDS) ThemePreviewTarget.BOARD else ThemePreviewTarget.PIECE)
+                        onPreviewTheme(currentBoardTheme, currentPieceTheme)
                     },
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color(0x22FFFFFF))
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Text("👁️", fontSize = 16.sp)
                 }
@@ -127,81 +129,106 @@ fun ThemeGalleryScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Currently Equipped Summary Bar
-            Row(
+            // ==========================================
+            // ACTIVE EQUIPPED SHOWCASE CARD
+            // ==========================================
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0x2BFFFFFF))
-                    .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(10.dp))
-                    .padding(horizontal = 12.dp, vertical = 7.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0x25FFFFFF))
+                    .border(1.dp, StudyAmberAccent.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
+                    .clickable {
+                        SoundManager.playClick()
+                        onPreviewTheme(currentBoardTheme, currentPieceTheme)
+                    }
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("♟", fontSize = 13.sp, color = StudyAmberAccent)
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "ACTIVE TABLETOP",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp,
+                                color = StudyAmberAccent
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(StudyAmberAccent)
+                                    .padding(horizontal = 5.dp, vertical = 1.dp)
+                            ) {
+                                Text(
+                                    text = "EQUIPPED",
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF1B140E)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "EQUIPPED COMBO",
-                            fontSize = 8.5.sp,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp,
-                            color = StudyAmberAccent
-                        )
-                        Text(
-                            text = "${currentBoardTheme.name} Board + ${currentPieceTheme.name} Pieces",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
+                            text = "${currentBoardTheme.name} + ${currentPieceTheme.name}",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
                             color = StudyParchmentCream
                         )
+                        Text(
+                            text = "Tap to examine in full 8×8 preview room",
+                            fontSize = 10.sp,
+                            color = Color(0xFFAFA293)
+                        )
                     }
-                }
 
-                Text(
-                    text = "PREVIEW ↗",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = StudyAmberAccent,
-                    modifier = Modifier
-                        .clickable {
-                            SoundManager.playClick()
-                            onPreviewTheme(currentBoardTheme, currentPieceTheme, ThemePreviewTarget.BOARD)
-                        }
-                        .padding(4.dp)
-                )
+                    // Mini preview of active combination
+                    RealMiniChessBoard(
+                        boardTheme = currentBoardTheme,
+                        pieceTheme = currentPieceTheme,
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Two-tab selector (BOARD THEMES / PIECE THEMES)
+            // ==========================================
+            // TWO-TAB SELECTOR: BOARD THEMES & PIECE THEMES
+            // ==========================================
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(44.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF281E16))
+                    .background(Color(0xFF241A13))
                     .border(1.dp, StudyTableFrame, RoundedCornerShape(12.dp))
-                    .padding(4.dp)
+                    .padding(3.dp)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .weight(1f)
+                        .fillMaxHeight()
                         .clip(RoundedCornerShape(10.dp))
                         .background(if (activeTab == ThemeTab.BOARDS) StudyAmberAccent else Color.Transparent)
                         .clickable {
                             SoundManager.playClick()
                             activeTab = ThemeTab.BOARDS
                         }
-                        .padding(vertical = 9.dp)
                 ) {
                     Text(
                         text = "BOARD THEMES (${ThemeRegistry.ALL_BOARD_THEMES.size})",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 0.8.sp,
+                        letterSpacing = 0.5.sp,
                         color = if (activeTab == ThemeTab.BOARDS) Color(0xFF1E140C) else StudyParchmentCream
                     )
                 }
@@ -210,41 +237,29 @@ fun ThemeGalleryScreen(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .weight(1f)
+                        .fillMaxHeight()
                         .clip(RoundedCornerShape(10.dp))
                         .background(if (activeTab == ThemeTab.PIECES) StudyAmberAccent else Color.Transparent)
                         .clickable {
                             SoundManager.playClick()
                             activeTab = ThemeTab.PIECES
                         }
-                        .padding(vertical = 9.dp)
                 ) {
                     Text(
                         text = "PIECE THEMES (${ThemeRegistry.ALL_PIECE_THEMES.size})",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 0.8.sp,
+                        letterSpacing = 0.5.sp,
                         color = if (activeTab == ThemeTab.PIECES) Color(0xFF1E140C) else StudyParchmentCream
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Section Description
-            Text(
-                text = if (activeTab == ThemeTab.BOARDS) {
-                    "Tap any board to examine in full 8x8 preview. Mix with any piece set."
-                } else {
-                    "Tap any piece set to preview with your currently equipped board."
-                },
-                fontSize = 11.sp,
-                color = Color(0xFFA69A8E),
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // 2-Column Grid of Theme Cards
+            // ==========================================
+            // 2-COLUMN GRID OF MINIATURE CHESSBOARD THEME CARDS
+            // ==========================================
             if (activeTab == ThemeTab.BOARDS) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
@@ -258,13 +273,13 @@ fun ThemeGalleryScreen(
                             theme = board,
                             pieceTheme = currentPieceTheme,
                             isSelected = isSelected,
-                            onCardClick = {
-                                SoundManager.playClick()
-                                onPreviewTheme(board, currentPieceTheme, ThemePreviewTarget.BOARD)
-                            },
-                            onEquip = {
+                            onSelect = {
                                 SoundManager.playClick()
                                 onSelectBoardTheme(board)
+                            },
+                            onPreview = {
+                                SoundManager.playClick()
+                                onPreviewTheme(board, currentPieceTheme)
                             }
                         )
                     }
@@ -282,13 +297,13 @@ fun ThemeGalleryScreen(
                             pieceTheme = pieces,
                             boardTheme = currentBoardTheme,
                             isSelected = isSelected,
-                            onCardClick = {
-                                SoundManager.playClick()
-                                onPreviewTheme(currentBoardTheme, pieces, ThemePreviewTarget.PIECE)
-                            },
-                            onEquip = {
+                            onSelect = {
                                 SoundManager.playClick()
                                 onSelectPieceTheme(pieces)
+                            },
+                            onPreview = {
+                                SoundManager.playClick()
+                                onPreviewTheme(currentBoardTheme, pieces)
                             }
                         )
                     }
@@ -301,11 +316,7 @@ fun ThemeGalleryScreen(
             Button(
                 onClick = {
                     SoundManager.playClick()
-                    onPreviewTheme(
-                        currentBoardTheme,
-                        currentPieceTheme,
-                        if (activeTab == ThemeTab.BOARDS) ThemePreviewTarget.BOARD else ThemePreviewTarget.PIECE
-                    )
+                    onPreviewTheme(currentBoardTheme, currentPieceTheme)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = StudyAmberAccent),
                 shape = RoundedCornerShape(12.dp),
@@ -315,7 +326,7 @@ fun ThemeGalleryScreen(
             ) {
                 Text(
                     text = "OPEN FULL 8×8 PREVIEW",
-                    fontSize = 12.5.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 1.sp,
                     color = Color(0xFF1B140E)
@@ -375,19 +386,8 @@ private fun RealMiniChessBoard(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .background(boardTheme.frameBorder)
-            .border(1.dp, boardTheme.frameInnerBorder, RoundedCornerShape(8.dp))
             .padding(2.5.dp)
     ) {
-        // If board has an illustrated raster asset (e.g. Artisan Wood), render it as background
-        if (boardTheme.boardDrawableRes != null) {
-            Image(
-                painter = painterResource(id = boardTheme.boardDrawableRes),
-                contentDescription = boardTheme.name,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
         Column(modifier = Modifier.fillMaxSize()) {
             for (r in 0 until 8) {
                 Row(modifier = Modifier.weight(1f)) {
@@ -400,20 +400,14 @@ private fun RealMiniChessBoard(
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxHeight()
-                                .background(
-                                    if (boardTheme.boardDrawableRes != null) Color.Transparent
-                                    else if (isLight) boardTheme.lightSquare
-                                    else boardTheme.darkSquare
-                                )
+                                .background(if (isLight) boardTheme.lightSquare else boardTheme.darkSquare)
                         ) {
                             if (piece != null) {
                                 PieceView(
                                     type = piece.first,
                                     color = piece.second,
                                     pieceTheme = pieceTheme,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(0.5.dp)
+                                    modifier = Modifier.fillMaxSize().padding(0.5.dp)
                                 )
                             }
                         }
@@ -429,8 +423,8 @@ private fun BoardThemeCard(
     theme: BoardTheme,
     pieceTheme: PieceTheme,
     isSelected: Boolean,
-    onCardClick: () -> Unit,
-    onEquip: () -> Unit
+    onSelect: () -> Unit,
+    onPreview: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -442,8 +436,8 @@ private fun BoardThemeCard(
                 color = if (isSelected) StudyAmberAccent else Color(0x33FFFFFF),
                 shape = RoundedCornerShape(14.dp)
             )
-            .clickable { onCardClick() }
-            .padding(9.dp)
+            .clickable { onPreview() }
+            .padding(10.dp)
     ) {
         // Real miniature 8x8 chessboard
         RealMiniChessBoard(
@@ -454,7 +448,7 @@ private fun BoardThemeCard(
                 .height(96.dp)
         )
 
-        Spacer(modifier = Modifier.height(7.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -462,13 +456,15 @@ private fun BoardThemeCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = theme.name,
-                fontSize = 12.5.sp,
-                fontWeight = FontWeight.Bold,
+                text = theme.name.uppercase(),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 0.5.sp,
                 color = if (isSelected) StudyAmberAccent else StudyParchmentCream,
-                modifier = Modifier.weight(1f),
-                maxLines = 1
+                maxLines = 1,
+                modifier = Modifier.weight(1f)
             )
+
             if (isSelected) {
                 Box(
                     modifier = Modifier
@@ -477,7 +473,7 @@ private fun BoardThemeCard(
                         .padding(horizontal = 5.dp, vertical = 1.dp)
                 ) {
                     Text(
-                        text = "EQUIPPED ✓",
+                        text = "EQUIPPED",
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Black,
                         color = Color(0xFF1B140E)
@@ -488,7 +484,7 @@ private fun BoardThemeCard(
 
         Text(
             text = theme.subtitle,
-            fontSize = 9.5.sp,
+            fontSize = 10.sp,
             color = TextSecondary,
             maxLines = 1
         )
@@ -501,17 +497,18 @@ private fun BoardThemeCard(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = if (isSelected) "EQUIPPED" else "TAP TO EQUIP",
-                fontSize = 9.5.sp,
+                text = if (isSelected) "EQUIPPED ✓" else "EQUIP",
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
-                color = if (isSelected) StudyAmberAccent else Color(0xFFDFB36E),
-                modifier = Modifier.clickable { onEquip() }
+                color = if (isSelected) StudyAmberAccent else StudyParchmentCream,
+                modifier = Modifier.clickable { onSelect() }
             )
             Text(
                 text = "Preview ↗",
-                fontSize = 9.5.sp,
-                color = StudyParchmentCream.copy(alpha = 0.8f),
-                modifier = Modifier.clickable { onCardClick() }
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = StudyAmberAccent,
+                modifier = Modifier.clickable { onPreview() }
             )
         }
     }
@@ -522,8 +519,8 @@ private fun PieceThemeCard(
     pieceTheme: PieceTheme,
     boardTheme: BoardTheme,
     isSelected: Boolean,
-    onCardClick: () -> Unit,
-    onEquip: () -> Unit
+    onSelect: () -> Unit,
+    onPreview: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -535,8 +532,8 @@ private fun PieceThemeCard(
                 color = if (isSelected) StudyAmberAccent else Color(0x33FFFFFF),
                 shape = RoundedCornerShape(14.dp)
             )
-            .clickable { onCardClick() }
-            .padding(9.dp)
+            .clickable { onPreview() }
+            .padding(10.dp)
     ) {
         // Real miniature 8x8 chessboard showing this piece set
         RealMiniChessBoard(
@@ -547,7 +544,7 @@ private fun PieceThemeCard(
                 .height(96.dp)
         )
 
-        Spacer(modifier = Modifier.height(7.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -555,13 +552,15 @@ private fun PieceThemeCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = pieceTheme.name,
-                fontSize = 12.5.sp,
-                fontWeight = FontWeight.Bold,
+                text = pieceTheme.name.uppercase(),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 0.5.sp,
                 color = if (isSelected) StudyAmberAccent else StudyParchmentCream,
-                modifier = Modifier.weight(1f),
-                maxLines = 1
+                maxLines = 1,
+                modifier = Modifier.weight(1f)
             )
+
             if (isSelected) {
                 Box(
                     modifier = Modifier
@@ -570,7 +569,7 @@ private fun PieceThemeCard(
                         .padding(horizontal = 5.dp, vertical = 1.dp)
                 ) {
                     Text(
-                        text = "EQUIPPED ✓",
+                        text = "EQUIPPED",
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Black,
                         color = Color(0xFF1B140E)
@@ -581,7 +580,7 @@ private fun PieceThemeCard(
 
         Text(
             text = pieceTheme.subtitle,
-            fontSize = 9.5.sp,
+            fontSize = 10.sp,
             color = TextSecondary,
             maxLines = 1
         )
@@ -594,17 +593,18 @@ private fun PieceThemeCard(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = if (isSelected) "EQUIPPED" else "TAP TO EQUIP",
-                fontSize = 9.5.sp,
+                text = if (isSelected) "EQUIPPED ✓" else "EQUIP",
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
-                color = if (isSelected) StudyAmberAccent else Color(0xFFDFB36E),
-                modifier = Modifier.clickable { onEquip() }
+                color = if (isSelected) StudyAmberAccent else StudyParchmentCream,
+                modifier = Modifier.clickable { onSelect() }
             )
             Text(
                 text = "Preview ↗",
-                fontSize = 9.5.sp,
-                color = StudyParchmentCream.copy(alpha = 0.8f),
-                modifier = Modifier.clickable { onCardClick() }
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = StudyAmberAccent,
+                modifier = Modifier.clickable { onPreview() }
             )
         }
     }
