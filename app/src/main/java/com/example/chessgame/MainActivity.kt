@@ -43,6 +43,9 @@ class MainActivity : ComponentActivity() {
         // Initialize offline TTS voice announcer
         VoiceAnnouncer.init(this)
 
+        // Initialize offline player progression & achievement system
+        com.example.chessgame.progression.PlayerProgressionManager.init(this)
+
         val prefs = getSharedPreferences("chess_game_prefs", Context.MODE_PRIVATE)
 
         setContent {

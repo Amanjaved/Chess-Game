@@ -42,6 +42,8 @@ import com.example.chessgame.ai.calculateAIMoveAsync
 import com.example.chessgame.audio.SoundManager
 import com.example.chessgame.audio.VoiceAnnouncer
 import com.example.chessgame.engine.*
+import com.example.chessgame.progression.PlayerProgressionManager
+import com.example.chessgame.progression.XpGainSummary
 import com.example.chessgame.theme.*
 import com.example.chessgame.ui.components.*
 import kotlinx.coroutines.delay
@@ -134,6 +136,7 @@ fun GameScreen(
     var showHowToPlayDialog by remember { mutableStateOf(false) }
     var showYourMoveBanner by remember { mutableStateOf(false) }
     var confirmDialogType by remember { mutableStateOf<String?>(null) } // "restart", "resign", "draw", "back"
+    var xpSummary by remember { mutableStateOf<XpGainSummary?>(null) }
 
     // System Back Gesture handling: dismiss dialogs first, then prompt to leave active match, or navigate back
     BackHandler {
@@ -211,6 +214,18 @@ fun GameScreen(
     val whiteAdvantage = (whiteVal - blackVal) / 100
     val blackAdvantage = (blackVal - whiteVal) / 100
 
+    fun finalizeMatch(finalOutcome: GameOutcome) {
+        outcome = finalOutcome
+        showGameOverOverlay = true
+        xpSummary = PlayerProgressionManager.recordMatchConclusion(
+            outcome = finalOutcome,
+            humanColor = humanColor,
+            isAIMode = isAIMode,
+            difficulty = if (isAIMode) aiDifficulty else null,
+            durationSeconds = gameDurationSeconds
+        )
+    }
+
     fun executeMove(move: Move) {
         // Clear any active move hints or board preview
         showHints = false
@@ -237,8 +252,7 @@ fun GameScreen(
 
         val newOutcome = getGameOutcome(next)
         if (newOutcome.isOver) {
-            outcome = newOutcome
-            showGameOverOverlay = true
+            finalizeMatch(newOutcome)
             if (newOutcome.winner == humanColor) {
                 SoundManager.playVictory()
                 VoiceAnnouncer.announceCheckmate(newOutcome.winner, humanColor, isAIMode)
@@ -317,6 +331,7 @@ fun GameScreen(
         gameStateHistory.add(fresh)
         outcome = GameOutcome(isOver = false)
         showGameOverOverlay = false
+        xpSummary = null
         isAIThinking = false
         gameDurationSeconds = 0
         whiteTimeSeconds = 0
@@ -326,14 +341,14 @@ fun GameScreen(
 
     fun handleResign() {
         val resignWinner = gameState.turn.opponent()
-        outcome = GameOutcome(isOver = true, winner = resignWinner, isDraw = false, reason = OutcomeReason.RESIGNATION)
-        showGameOverOverlay = true
+        val resignOutcome = GameOutcome(isOver = true, winner = resignWinner, isDraw = false, reason = OutcomeReason.RESIGNATION)
+        finalizeMatch(resignOutcome)
         VoiceAnnouncer.announceResignation(gameState.turn)
     }
 
     fun handleDrawOffer() {
-        outcome = GameOutcome(isOver = true, winner = null, isDraw = true, reason = OutcomeReason.MUTUAL_AGREEMENT)
-        showGameOverOverlay = true
+        val drawOutcome = GameOutcome(isOver = true, winner = null, isDraw = true, reason = OutcomeReason.MUTUAL_AGREEMENT)
+        finalizeMatch(drawOutcome)
         SoundManager.playDraw()
         VoiceAnnouncer.announceDraw("MUTUAL AGREEMENT")
     }
@@ -886,6 +901,7 @@ fun GameScreen(
                 opponentName = oppName,
                 moveCount = gameState.history.size,
                 gameDurationSeconds = gameDurationSeconds,
+                xpSummary = xpSummary,
                 pieceTheme = currentPieceTheme,
                 onAnalyseGame = {
                     showGameOverOverlay = false
