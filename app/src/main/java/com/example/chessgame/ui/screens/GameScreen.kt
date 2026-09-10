@@ -7,8 +7,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -50,16 +48,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Screen 6: Chess Gameplay Screen.
- * Immersive tabletop chess experience redesigned to match the reference design:
- * - Full-screen atmospheric desk background with central darkening
- * - Elegant top header: [ < ] CHESS (CLASSIC STRATEGY. REIMAGINED.) [ ⚙️ ] [ ••• ]
- * - 3-Compartment Player Information Bar: [ You / White ] [ ⏱ 09:48 ] [ AI / Black ]
- * - Centered physical ChessBoardView with smooth piece animations & legal moves
- * - Best Moves hint system with 3 candidate move cards & selected move detail box
+ * Screen: Grandmaster Arena Chess Gameplay.
+ * Tactical Monolith aesthetic featuring:
+ * - Arena Monolith background environment with cyber-cyan atmospheric rim
+ * - Command Top HUD: [ ← ] CHESS ARENA [ ⚙️ ] [ ••• ]
+ * - 3-Compartment Combatant Bar with live illustrated AI avatars, match clock, check auras & advantage counters
+ * - Centered monolithic ChessBoardView with smooth piece animations, legal highlights & preview arrows
+ * - Best Moves hint system with candidate move cards & selected move detail box
  * - Board directional arrow and square highlights for move preview (pure visual preview)
- * - 4 Bottom compact pill controls: [ ↩ Undo ] [ 💡 Hint ] [ 🔄 New Game ] [ ⇄ Flip Board ]
- * - Strict Android status bar and navigation bar inset handling
+ * - 4 Bottom tactical pill controls: [ ↩ Undo ] [ 💡 Hint ] [ 🔄 New Game ] [ ⇄ Flip ]
+ * - Strict Android status bar and navigation bar safe area inset handling
  */
 @Composable
 fun GameScreen(
@@ -169,7 +167,22 @@ fun GameScreen(
     }
 
     val isAIMode = mode == "ai"
-    val oppName = if (isAIMode) "AI (${aiDifficulty.name})" else player2Name
+    val oppName = if (isAIMode) {
+        when (aiDifficulty) {
+            AIDifficulty.EASY -> "Cadet Valen"
+            AIDifficulty.MEDIUM -> "Strategist Lyra"
+            AIDifficulty.HARD -> "Commander Voron"
+            AIDifficulty.EXPERT -> "Oracle Kairos"
+        }
+    } else player2Name
+
+    val aiAvatarRes = when (aiDifficulty) {
+        AIDifficulty.EASY -> R.drawable.avatar_opponent_recruit
+        AIDifficulty.MEDIUM -> R.drawable.avatar_opponent_tactician
+        AIDifficulty.HARD -> R.drawable.avatar_opponent_warmaster
+        AIDifficulty.EXPERT -> R.drawable.avatar_opponent_grandmaster
+    }
+
     val aiColor = humanColor.opponent()
     val isHumanTurn = if (isAIMode) gameState.turn == humanColor else true
     val isAITurn = isAIMode && gameState.turn == aiColor && !outcome.isOver
@@ -355,44 +368,36 @@ fun GameScreen(
 
     val lastMove = if (gameState.history.isNotEmpty()) gameState.history.last() else null
 
-    // Root Container with Atmospheric Room Background
+    // Root Container with Arena Monolith Environment Background
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0C0806))
+            .background(ArenaColors.VoidAbyss)
     ) {
-        // ==========================================
-        // LAYER 1: ATMOSPHERIC CHESS DESK BACKGROUND
-        // ==========================================
+        // LAYER 1: ARENA ENVIRONMENT BACKGROUND
         Image(
-            painter = painterResource(id = R.drawable.bg_main_menu),
-            contentDescription = "Chess Desk Environment",
+            painter = painterResource(id = R.drawable.bg_arena_monolith),
+            contentDescription = "Monolith Arena Environment",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
 
-        // ==========================================
-        // LAYER 1.5: CENTRAL SCRIM OVERLAY
-        // Keeps center behind board dark and crisp while ambient desk elements frame edges
-        // ==========================================
+        // LAYER 1.5: HIGH-CONTRAST SCRIM OVERLAY
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    Brush.radialGradient(
+                    Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xEB0A0705), // ~92% dark center for perfect contrast
-                            Color(0xC4080503), // ~77% mid falloff
-                            Color(0x66060403)  // ~40% ambient desk edge
-                        ),
-                        radius = 1350f
+                            Color(0xF007090E),
+                            Color(0xD9080C14),
+                            Color(0xF505070B)
+                        )
                     )
                 )
         )
 
-        // ==========================================
         // LAYER 2: NATIVE COMPOSE GAMEPLAY UI
-        // ==========================================
         val scrollState = rememberScrollState()
 
         Column(
@@ -406,7 +411,7 @@ fun GameScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // ==========================================
-            // TOP HEADER: [ < ] CHESS [ ⚙️ ] [ ••• ]
+            // TOP HUD: [ ← ] CHESS ARENA [ ⚙️ ] [ ••• ]
             // ==========================================
             Box(
                 modifier = Modifier
@@ -414,14 +419,14 @@ fun GameScreen(
                     .height(44.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Left: Back button (rounded square, dark translucent)
+                // Left: Back button
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .size(38.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0x28FFFFFF))
-                        .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(10.dp))
+                        .background(ArenaColors.TitaniumSurface)
+                        .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(10.dp))
                         .clickable {
                             SoundManager.playClick()
                             if (gameState.history.isNotEmpty() && !outcome.isOver) {
@@ -436,38 +441,38 @@ fun GameScreen(
                         text = "←",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
-                        color = StudyParchmentCream
+                        color = ArenaColors.TextPrimary
                     )
                 }
 
-                // Center: Gold Knight + CHESS + CLASSIC STRATEGY. REIMAGINED.
+                // Center: Emblem + CHESS ARENA + TACTICAL COMBAT PROTOCOL
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
-                            painter = painterResource(id = R.drawable.ic_diff_knight),
+                            painter = painterResource(id = R.drawable.logo_game_emblem),
                             contentDescription = null,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp).clip(CircleShape)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "CHESS",
-                            fontSize = 16.sp,
+                            text = "CHESS ARENA",
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 3.sp,
+                            letterSpacing = 2.5.sp,
                             fontFamily = FontFamily.Serif,
-                            color = Color(0xFFF2E9DE)
+                            color = ArenaColors.TextPrimary
                         )
                     }
                     Text(
-                        text = "CLASSIC STRATEGY. REIMAGINED.",
+                        text = if (isAIMode) "SOLO COMBAT PROTOCOL" else "DUEL PASS & PLAY",
                         fontSize = 8.5.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.1.sp,
-                        color = StudyAmberAccent
+                        color = ArenaColors.CyberCyan
                     )
                 }
 
-                // Right: Settings [ ⚙️ ] and More [ ••• ]
+                // Right: Settings [ ⚙️ ] and Pause/More [ ••• ]
                 Row(
                     modifier = Modifier.align(Alignment.CenterEnd),
                     verticalAlignment = Alignment.CenterVertically,
@@ -478,8 +483,8 @@ fun GameScreen(
                         modifier = Modifier
                             .size(38.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0x28FFFFFF))
-                            .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(10.dp))
+                            .background(ArenaColors.TitaniumSurface)
+                            .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(10.dp))
                             .clickable {
                                 SoundManager.playClick()
                                 showSettingsDialog = true
@@ -489,13 +494,13 @@ fun GameScreen(
                         Text("⚙️", fontSize = 15.sp)
                     }
 
-                    // More button (Pause overlay / game actions)
+                    // Tactical Pause / More button
                     Box(
                         modifier = Modifier
                             .size(38.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0x28FFFFFF))
-                            .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(10.dp))
+                            .background(ArenaColors.TitaniumSurface)
+                            .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(10.dp))
                             .clickable {
                                 SoundManager.playClick()
                                 showGamePauseMenu = true
@@ -506,7 +511,7 @@ fun GameScreen(
                             text = "•••",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Black,
-                            color = StudyParchmentCream
+                            color = ArenaColors.TextPrimary
                         )
                     }
                 }
@@ -515,12 +520,9 @@ fun GameScreen(
             Spacer(modifier = Modifier.height(6.dp))
 
             // ==========================================
-            // PLAYER INFORMATION BAR (3-COMPARTMENT ROW MATCHING REFERENCE)
+            // PLAYER COMBATANT BAR (3-COMPARTMENT ROW)
             // [ You / White ] [ ⏱ 09:48 ] [ AI / Black ]
             // ==========================================
-            val isWhiteTurn = gameState.turn == PieceColor.WHITE
-            val isBlackTurn = gameState.turn == PieceColor.BLACK
-
             val youColor = if (isAIMode) humanColor else PieceColor.WHITE
             val oppColor = if (isAIMode) aiColor else PieceColor.BLACK
 
@@ -540,28 +542,28 @@ fun GameScreen(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Left Compartment: You
+                // Left Compartment: You / Commander 1
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(52.dp)
-                        .shadow(if (isYouActive) 6.dp else 1.dp, RoundedCornerShape(10.dp), spotColor = Color(0x66DFB36E))
-                        .clip(RoundedCornerShape(10.dp))
+                        .height(54.dp)
+                        .shadow(if (isYouActive) 8.dp else 1.dp, RoundedCornerShape(12.dp), spotColor = ArenaColors.CyberCyan)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(
                             if (isYouActive) {
                                 Brush.verticalGradient(
-                                    listOf(Color(0xE6261C14), Color(0xFA1A110B))
+                                    listOf(Color(0xE6141D2D), Color(0xFA0B111A))
                                 )
                             } else {
                                 Brush.verticalGradient(
-                                    listOf(Color(0xCC16100B), Color(0xCC16100B))
+                                    listOf(ArenaColors.TitaniumSurface, ArenaColors.TitaniumSurface)
                                 )
                             }
                         )
                         .border(
                             width = if (isYouActive) 1.5.dp else 1.dp,
-                            color = if (isYouActive) StudyAmberAccent else Color(0x25DFB36E),
-                            shape = RoundedCornerShape(10.dp)
+                            color = if (isYouActive) ArenaColors.CyberCyan else ArenaColors.TitaniumBorder,
+                            shape = RoundedCornerShape(12.dp)
                         )
                         .padding(horizontal = 8.dp, vertical = 6.dp),
                     contentAlignment = Alignment.CenterStart
@@ -574,15 +576,15 @@ fun GameScreen(
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .size(34.dp)
+                                .size(36.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0x33FFFFFF))
-                                .border(0.8.dp, Color(0x35DFB36E), RoundedCornerShape(8.dp))
+                                .background(Color(0x2200F0FF))
+                                .border(1.dp, if (isYouActive) ArenaColors.CyberCyan else ArenaColors.TitaniumBorder, RoundedCornerShape(8.dp))
                         ) {
                             Text(text = "👤", fontSize = 16.sp)
                         }
 
-                        Spacer(modifier = Modifier.width(7.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
 
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -590,7 +592,7 @@ fun GameScreen(
                                     text = if (isAIMode) "You" else player1Name,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = StudyParchmentCream,
+                                    color = ArenaColors.TextPrimary,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -600,7 +602,7 @@ fun GameScreen(
                                         text = "+$youAdvantage",
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Black,
-                                        color = StudyAmberAccent
+                                        color = ArenaColors.CyberCyan
                                     )
                                 }
                             }
@@ -618,7 +620,7 @@ fun GameScreen(
                                     text = if (youInCheck) "CHECK!" else youColor.name.lowercase().replaceFirstChar { it.uppercase() },
                                     fontSize = 9.5.sp,
                                     fontWeight = if (youInCheck) FontWeight.Black else FontWeight.Normal,
-                                    color = if (youInCheck) Color(0xFFFF6B6B) else Color(0xFFAFA293)
+                                    color = if (youInCheck) ArenaColors.CrimsonAlert else ArenaColors.TextSecondary
                                 )
                             }
                         }
@@ -634,48 +636,48 @@ fun GameScreen(
                 Box(
                     modifier = Modifier
                         .width(92.dp)
-                        .height(52.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xCC16100B))
-                        .border(1.dp, Color(0x25DFB36E), RoundedCornerShape(10.dp))
+                        .height(54.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(ArenaColors.TitaniumSurface)
+                        .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(12.dp))
                         .padding(horizontal = 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "⏱", fontSize = 14.sp)
+                        Text(text = "⏱", fontSize = 13.sp)
                         Spacer(modifier = Modifier.width(5.dp))
                         Text(
                             text = clockStr,
-                            fontSize = 14.5.sp,
+                            fontSize = 14.sp,
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.ExtraBold,
-                            color = StudyParchmentCream
+                            color = ArenaColors.TextPrimary
                         )
                     }
                 }
 
-                // Right Compartment: AI / Opponent
+                // Right Compartment: AI / Adversary
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(52.dp)
-                        .shadow(if (isOppActive) 6.dp else 1.dp, RoundedCornerShape(10.dp), spotColor = Color(0x66DFB36E))
-                        .clip(RoundedCornerShape(10.dp))
+                        .height(54.dp)
+                        .shadow(if (isOppActive) 8.dp else 1.dp, RoundedCornerShape(12.dp), spotColor = ArenaColors.SolarAmber)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(
                             if (isOppActive) {
                                 Brush.verticalGradient(
-                                    listOf(Color(0xE6261C14), Color(0xFA1A110B))
+                                    listOf(Color(0xE6261C14), Color(0xFA150E09))
                                 )
                             } else {
                                 Brush.verticalGradient(
-                                    listOf(Color(0xCC16100B), Color(0xCC16100B))
+                                    listOf(ArenaColors.TitaniumSurface, ArenaColors.TitaniumSurface)
                                 )
                             }
                         )
                         .border(
                             width = if (isOppActive) 1.5.dp else 1.dp,
-                            color = if (isOppActive) StudyAmberAccent else Color(0x25DFB36E),
-                            shape = RoundedCornerShape(10.dp)
+                            color = if (isOppActive) ArenaColors.SolarAmber else ArenaColors.TitaniumBorder,
+                            shape = RoundedCornerShape(12.dp)
                         )
                         .padding(horizontal = 8.dp, vertical = 6.dp),
                     contentAlignment = Alignment.CenterStart
@@ -684,27 +686,35 @@ fun GameScreen(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Opponent avatar
+                        // Opponent avatar: Real Illustrated Image for AI!
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .size(34.dp)
+                                .size(36.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0x33FFFFFF))
-                                .border(0.8.dp, Color(0x35DFB36E), RoundedCornerShape(8.dp))
+                                .border(1.dp, if (isOppActive) ArenaColors.SolarAmber else ArenaColors.TitaniumBorder, RoundedCornerShape(8.dp))
                         ) {
-                            Text(text = if (isAIMode) "🤖" else "👥", fontSize = 16.sp)
+                            if (isAIMode) {
+                                Image(
+                                    painter = painterResource(id = aiAvatarRes),
+                                    contentDescription = oppName,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                Text(text = "👥", fontSize = 16.sp)
+                            }
                         }
 
-                        Spacer(modifier = Modifier.width(7.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
 
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = if (isAIMode) "AI (${aiDifficulty.name.take(3)})" else player2Name,
-                                    fontSize = 12.sp,
+                                    text = oppName.take(12),
+                                    fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = StudyParchmentCream,
+                                    color = ArenaColors.TextPrimary,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -714,7 +724,7 @@ fun GameScreen(
                                         text = "+$oppAdvantage",
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Black,
-                                        color = StudyAmberAccent
+                                        color = ArenaColors.SolarAmber
                                     )
                                 }
                             }
@@ -733,14 +743,14 @@ fun GameScreen(
                                         text = "Thinking...",
                                         fontSize = 9.5.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = StudyAmberAccent
+                                        color = ArenaColors.SolarAmber
                                     )
                                 } else {
                                     Text(
                                         text = if (oppInCheck) "CHECK!" else oppColor.name.lowercase().replaceFirstChar { it.uppercase() },
                                         fontSize = 9.5.sp,
                                         fontWeight = if (oppInCheck) FontWeight.Black else FontWeight.Normal,
-                                        color = if (oppInCheck) Color(0xFFFF6B6B) else Color(0xFFAFA293)
+                                        color = if (oppInCheck) ArenaColors.CrimsonAlert else ArenaColors.TextSecondary
                                     )
                                 }
                             }
@@ -749,16 +759,19 @@ fun GameScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             // ==========================================
             // CHESSBOARD CENTERPIECE (ChessBoardView)
+            // Encased in Monolithic Titanium Frame with Cyber Glow
             // ==========================================
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .shadow(22.dp, RoundedCornerShape(16.dp), spotColor = Color(0xDD000000)),
+                    .shadow(28.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFF000000))
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(1.5.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 ChessBoardView(
@@ -779,36 +792,32 @@ fun GameScreen(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // "YOUR MOVE" Overlay Banner (fast 750ms duration, smooth fade)
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = showYourMoveBanner,
-                    enter = fadeIn(tween(180)) + scaleIn(initialScale = 0.85f, animationSpec = tween(180)),
-                    exit = fadeOut(tween(180)) + scaleOut(targetScale = 0.85f, animationSpec = tween(180)),
-                    modifier = Modifier.align(Alignment.Center)
-                ) {
+                // "YOUR MOVE" Overlay Banner (fast 750ms duration)
+                if (showYourMoveBanner) {
                     Box(
                         modifier = Modifier
-                            .shadow(12.dp, RoundedCornerShape(14.dp))
+                            .align(Alignment.Center)
+                            .shadow(16.dp, RoundedCornerShape(14.dp), spotColor = ArenaColors.CyberCyan)
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xF21A120B))
-                            .border(1.5.dp, StudyAmberAccent, RoundedCornerShape(14.dp))
+                            .background(Color(0xF00A101A))
+                            .border(1.5.dp, ArenaColors.CyberCyan, RoundedCornerShape(14.dp))
                             .clickable { showYourMoveBanner = false }
-                            .padding(horizontal = 22.dp, vertical = 10.dp),
+                            .padding(horizontal = 24.dp, vertical = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "YOUR MOVE",
+                                text = "YOUR TURN",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Black,
                                 letterSpacing = 2.sp,
-                                color = StudyAmberAccent
+                                color = ArenaColors.CyberCyan
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Think ahead.",
+                                text = "Command the Arena.",
                                 fontSize = 11.sp,
-                                color = StudyParchmentCream
+                                color = ArenaColors.TextSecondary
                             )
                         }
                     }
@@ -833,7 +842,7 @@ fun GameScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // ==========================================
-            // BOTTOM GAMEPLAY CONTROLS (4 COMPACT PILL BUTTONS)
+            // BOTTOM TACTICAL CONTROLS (4 COMPACT PILL BUTTONS)
             // [ ↩ Undo ] [ 💡 Hint ] [ 🔄 New Game ] [ ⇄ Flip Board ]
             // ==========================================
             Row(
@@ -856,7 +865,7 @@ fun GameScreen(
                 // HINT
                 GameControlPill(
                     icon = if (isCalculatingHints) "⏳" else "💡",
-                    label = if (isCalculatingHints) "Thinking" else "Hint",
+                    label = if (isCalculatingHints) "Tactics" else "Hint",
                     enabled = !isAIThinking && !outcome.isOver,
                     isActive = showHints || isCalculatingHints,
                     onClick = { toggleHints() },
@@ -866,7 +875,7 @@ fun GameScreen(
                 // NEW GAME
                 GameControlPill(
                     icon = "🔄",
-                    label = "New Game",
+                    label = "Restart",
                     enabled = !isAIThinking,
                     isActive = false,
                     onClick = { confirmDialogType = "restart" },
@@ -876,14 +885,14 @@ fun GameScreen(
                 // FLIP BOARD
                 GameControlPill(
                     icon = "⇄",
-                    label = "Flip Board",
+                    label = "Flip",
                     enabled = true,
                     isActive = manualFlip,
                     onClick = {
                         manualFlip = !manualFlip
                         SoundManager.playClick()
                     },
-                    modifier = Modifier.weight(1.15f)
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -923,7 +932,7 @@ fun GameScreen(
             )
         }
 
-        // Parchment Chess Notebook Pause Menu
+        // Tactical Combat Pause Menu
         if (showGamePauseMenu) {
             GameMenuOverlay(
                 onResume = { showGamePauseMenu = false },
@@ -954,7 +963,7 @@ fun GameScreen(
             )
         }
 
-        // Move History Sheet
+        // Move History Combat Log
         if (showHistorySheet) {
             MoveHistorySheet(
                 moves = gameState.history,
@@ -984,7 +993,7 @@ fun GameScreen(
             )
         }
 
-        // How To Play Dialog
+        // How To Play Handbook Dialog
         if (showHowToPlayDialog) {
             HowToPlayDialog(
                 pieceTheme = currentPieceTheme,
@@ -999,24 +1008,24 @@ fun GameScreen(
                 title = {
                     Text(
                         text = when (type) {
-                            "restart" -> "Restart Match?"
-                            "resign" -> "Resign Match?"
-                            "draw" -> "Offer Draw?"
-                            else -> "Leave Table?"
+                            "restart" -> "Restart Engagement?"
+                            "resign" -> "Surrender Position?"
+                            "draw" -> "Offer Tactical Draw?"
+                            else -> "Depart Arena?"
                         },
                         fontWeight = FontWeight.Bold,
-                        color = StudyParchmentCream
+                        color = ArenaColors.TextPrimary
                     )
                 },
                 text = {
                     Text(
                         text = when (type) {
-                            "restart" -> "The board layout will be reset to the opening position."
+                            "restart" -> "Both forces will reset to standard opening positions."
                             "resign" -> "You will surrender this match to your opponent."
-                            "draw" -> "Both players agree to conclude this match in an honorable draw."
-                            else -> "Your current tabletop game progress will be lost."
+                            "draw" -> "Both commanders agree to conclude this engagement in a draw."
+                            else -> "Your active match progress will be lost."
                         },
-                        color = Color(0xFFC2B6A8)
+                        color = ArenaColors.TextSecondary
                     )
                 },
                 confirmButton = {
@@ -1031,31 +1040,31 @@ fun GameScreen(
                             confirmDialogType = null
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (type == "resign") Color(0xFFC93B2B) else StudyAmberAccent
+                            containerColor = if (type == "resign") ArenaColors.CrimsonAlert else ArenaColors.CyberCyan
                         )
                     ) {
                         Text(
                             text = "Confirm",
                             fontWeight = FontWeight.Bold,
-                            color = if (type == "resign") Color.White else Color(0xFF1B1207)
+                            color = Color(0xFF070A0F)
                         )
                     }
                 },
                 dismissButton = {
                     OutlinedButton(onClick = { confirmDialogType = null }) {
-                        Text("Cancel", color = StudyParchmentCream)
+                        Text("Cancel", color = ArenaColors.TextPrimary)
                     }
                 },
-                containerColor = Color(0xFF221A14)
+                containerColor = Color(0xFF141924)
             )
         }
     }
 }
 
 /**
- * Compact Game Control Pill Button matching reference styling:
- * [ icon label ] with rounded pill shape, dark translucent wood surface,
- * warm gold border, and gold highlight when active.
+ * Compact Tactical Control Pill Button matching Grandmaster Arena styling:
+ * [ icon label ] with rounded pill shape, brushed titanium surface,
+ * cyber-cyan border and active highlight.
  */
 @Composable
 private fun GameControlPill(
@@ -1069,22 +1078,22 @@ private fun GameControlPill(
     Box(
         modifier = modifier
             .height(38.dp)
-            .shadow(if (isActive) 6.dp else 1.dp, RoundedCornerShape(19.dp), spotColor = Color(0x66DFB36E))
+            .shadow(if (isActive) 6.dp else 1.dp, RoundedCornerShape(19.dp), spotColor = ArenaColors.CyberCyan)
             .clip(RoundedCornerShape(19.dp))
             .background(
                 if (isActive) {
                     Brush.verticalGradient(
-                        listOf(Color(0xFFDFB36E), Color(0xFFB8893F))
+                        listOf(ArenaColors.CyberCyan, Color(0xFF0098A6))
                     )
                 } else {
                     Brush.verticalGradient(
-                        listOf(Color(0xCC1A120C), Color(0xCC1A120C))
+                        listOf(ArenaColors.TitaniumSurface, ArenaColors.TitaniumSurface)
                     )
                 }
             )
             .border(
                 width = 1.dp,
-                color = if (isActive) StudyAmberAccent else Color(0x35DFB36E),
+                color = if (isActive) ArenaColors.CyberCyan else ArenaColors.TitaniumBorder,
                 shape = RoundedCornerShape(19.dp)
             )
             .clickable(enabled = enabled) {
@@ -1100,14 +1109,14 @@ private fun GameControlPill(
             Text(
                 text = icon,
                 fontSize = 11.5.sp,
-                color = if (isActive) Color(0xFF140D08) else if (enabled) StudyParchmentCream else Color(0x55FFFFFF)
+                color = if (isActive) Color(0xFF06090F) else if (enabled) ArenaColors.TextPrimary else Color(0x55FFFFFF)
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = label,
                 fontSize = 10.5.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isActive) Color(0xFF140D08) else if (enabled) StudyParchmentCream else Color(0x55FFFFFF),
+                color = if (isActive) Color(0xFF06090F) else if (enabled) ArenaColors.TextPrimary else Color(0x55FFFFFF),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

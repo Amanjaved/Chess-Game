@@ -16,7 +16,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -34,9 +36,9 @@ private enum class HowToPlayChapter {
 }
 
 /**
- * Illustrated Chess Player's Handbook.
- * Styled as a vintage parchment study treatise with chapter tabs,
- * piece movement diagrams, and tactical rules.
+ * Grandmaster Arena Tactical Manual & Chess Doctrines.
+ * Interactive tactical handbook featuring doctrine chapters, piece movement schematics,
+ * special gambits, and endgame rules.
  */
 @Composable
 fun HowToPlayDialog(
@@ -48,20 +50,20 @@ fun HowToPlayDialog(
     Dialog(onDismissRequest = onClose) {
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.95f)
+                .fillMaxWidth(0.96f)
                 .heightIn(max = 580.dp)
-                .shadow(28.dp, RoundedCornerShape(20.dp), spotColor = Color(0xCC000000))
-                .clip(RoundedCornerShape(20.dp))
+                .shadow(32.dp, RoundedCornerShape(22.dp), spotColor = Color(0xDD000000))
+                .clip(RoundedCornerShape(22.dp))
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF231A14),
-                            Color(0xFF16100C),
-                            Color(0xFF0F0B08)
+                        listOf(
+                            Color(0xFF141A25),
+                            Color(0xFF0C1018),
+                            Color(0xFF070A0F)
                         )
                     )
                 )
-                .border(1.5.dp, Color(0x38D4A373), RoundedCornerShape(20.dp))
+                .border(1.5.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(22.dp))
                 .padding(18.dp)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
@@ -73,16 +75,17 @@ fun HowToPlayDialog(
                 ) {
                     Column {
                         Text(
-                            text = "CHESS HANDBOOK",
+                            text = "TACTICAL MANUAL",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 2.sp,
-                            color = StudyParchmentCream
+                            fontFamily = FontFamily.Serif,
+                            color = ArenaColors.CyberCyan
                         )
                         Text(
-                            text = "A Guide for the Thoughtful Player",
+                            text = "Grandmaster Doctrines & Movement Rules",
                             fontSize = 11.sp,
-                            color = StudyAmberAccent
+                            color = ArenaColors.TextSecondary
                         )
                     }
 
@@ -92,11 +95,11 @@ fun HowToPlayDialog(
                             onClose()
                         },
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(34.dp)
                             .clip(CircleShape)
-                            .background(Color(0x20FFFFFF))
+                            .background(Color(0x22FFFFFF))
                     ) {
-                        Text("✕", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = StudyParchmentCream)
+                        Text("✕", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = ArenaColors.TextPrimary)
                     }
                 }
 
@@ -104,8 +107,13 @@ fun HowToPlayDialog(
 
                 // Scrollable Chapter Tabs
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(ArenaColors.TitaniumSurface)
+                        .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(12.dp))
+                        .padding(3.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     listOf(
                         Pair(HowToPlayChapter.BASICS, "Basics"),
@@ -119,8 +127,8 @@ fun HowToPlayDialog(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) StudyAmberAccent else Color(0x18FFFFFF))
+                                .clip(RoundedCornerShape(9.dp))
+                                .background(if (isSelected) ArenaColors.CyberCyan else Color.Transparent)
                                 .clickable {
                                     SoundManager.playClick()
                                     activeChapter = chapter
@@ -130,8 +138,8 @@ fun HowToPlayDialog(
                             Text(
                                 text = label,
                                 fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color(0xFF140E06) else StudyParchmentCream
+                                fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
+                                color = if (isSelected) Color(0xFF070B10) else ArenaColors.TextSecondary
                             )
                         }
                     }
@@ -149,19 +157,19 @@ fun HowToPlayDialog(
                             item {
                                 HandbookArticleCard(
                                     title = "The Objective",
-                                    body = "Chess is a war of two minds played on an 8×8 grid. Your goal is not merely to capture pieces, but to trap the enemy King into Checkmate — where he is attacked and cannot escape."
+                                    body = "Chess is a war of two minds played on an 8×8 tactical grid. Your goal is not merely to capture pieces, but to trap the enemy King into Checkmate — where he is directly threatened and has no legal path of escape."
                                 )
                             }
                             item {
                                 HandbookArticleCard(
-                                    title = "The Board & Setup",
-                                    body = "White moves first. White begins on ranks 1 & 2; Black begins on ranks 7 & 8. Bottom-right corner is always a light square: 'White on the right'. Queens sit on their own matching color (White Queen on d1, Black Queen on d8)."
+                                    title = "The Arena & Deployment",
+                                    body = "White Legion moves first. White deploys on ranks 1 & 2; Black Dynasty deploys on ranks 7 & 8. The bottom-right corner is always a light square: 'White on the right'. Queens sit on their matching color (White Queen on d1, Black Queen on d8)."
                                 )
                             }
                             item {
                                 HandbookArticleCard(
-                                    title = "Tempo & Initiative",
-                                    body = "Control the 4 central squares (d4, d5, e4, e5). Develop your Knights and Bishops early before launching an assault with your heavy artillery (Queen & Rooks)."
+                                    title = "Tempo & Center Control",
+                                    body = "Seize control of the 4 central nexus squares (d4, d5, e4, e5). Mobilize your Knights and Bishops early to project force before maneuvering your heavy batteries (Queen & Rooks)."
                                 )
                             }
                         }
@@ -171,7 +179,7 @@ fun HowToPlayDialog(
                                 IllustratedPieceMoveCard(
                                     name = "KING ♚",
                                     symbol = "1 square any direction",
-                                    description = "The heart of your army. Moves one square in any direction. Must never move into check or remain under threat.",
+                                    description = "The supreme commander. Advances 1 square in any direction. Must never step into check or remain under threat.",
                                     type = PieceType.KING,
                                     pieceTheme = pieceTheme
                                 )
@@ -180,7 +188,7 @@ fun HowToPlayDialog(
                                 IllustratedPieceMoveCard(
                                     name = "QUEEN ♛",
                                     symbol = "Ranks, files & diagonals",
-                                    description = "The most powerful piece on the board. Can sweep any number of unoccupied squares horizontally, vertically, or diagonally.",
+                                    description = "The most lethal unit on the board. Can sweep any number of unoccupied squares horizontally, vertically, or diagonally.",
                                     type = PieceType.QUEEN,
                                     pieceTheme = pieceTheme
                                 )
@@ -189,7 +197,7 @@ fun HowToPlayDialog(
                                 IllustratedPieceMoveCard(
                                     name = "ROOK ♜",
                                     symbol = "Straight lines",
-                                    description = "Moves any distance along files (columns) and ranks (rows). Controls open files and delivers powerful endgames.",
+                                    description = "Strikes along files (columns) and ranks (rows). Controls open operational corridors and delivers crushing endgame checkmates.",
                                     type = PieceType.ROOK,
                                     pieceTheme = pieceTheme
                                 )
@@ -198,7 +206,7 @@ fun HowToPlayDialog(
                                 IllustratedPieceMoveCard(
                                     name = "BISHOP ♝",
                                     symbol = "Diagonals only",
-                                    description = "Travels any distance diagonally. Each player begins with one light-squared Bishop and one dark-squared Bishop.",
+                                    description = "Strikes diagonally across the arena. Each commander commands one light-squared Bishop and one dark-squared Bishop.",
                                     type = PieceType.BISHOP,
                                     pieceTheme = pieceTheme
                                 )
@@ -207,7 +215,7 @@ fun HowToPlayDialog(
                                 IllustratedPieceMoveCard(
                                     name = "KNIGHT ♞",
                                     symbol = "L-shape leap",
-                                    description = "Moves in an 'L' shape: 2 squares in one cardinal direction, then 1 square perpendicular. The only piece capable of jumping over other pieces.",
+                                    description = "Moves in an 'L' shape: 2 squares cardinal, then 1 square perpendicular. The only unit capable of jumping over friendly or enemy forces.",
                                     type = PieceType.KNIGHT,
                                     pieceTheme = pieceTheme
                                 )
@@ -216,7 +224,7 @@ fun HowToPlayDialog(
                                 IllustratedPieceMoveCard(
                                     name = "PAWN ♟",
                                     symbol = "Forward 1 (or 2 initially)",
-                                    description = "Advances forward 1 square (or optionally 2 squares on its very first move). Captures diagonally forward 1 square.",
+                                    description = "Advances forward 1 square (or optionally 2 squares on initial march). Attacks diagonally forward 1 square. Crucial for structure.",
                                     type = PieceType.PAWN,
                                     pieceTheme = pieceTheme
                                 )
@@ -227,19 +235,19 @@ fun HowToPlayDialog(
                             item {
                                 HandbookArticleCard(
                                     title = "Castling (O-O / O-O-O)",
-                                    body = "A dual move where the King moves 2 squares toward a Rook, and that Rook hops over to sit beside the King. Neither piece may have moved previously, and the King cannot castle out of, through, or into check."
+                                    body = "A coordinated tactical move where the King moves 2 squares toward a Rook, and that Rook hops over to flank the King. Neither unit may have previously moved, and the King cannot castle out of, through, or into check."
                                 )
                             }
                             item {
                                 HandbookArticleCard(
                                     title = "En Passant",
-                                    body = "If an enemy Pawn advances 2 squares past your pawn on an adjacent file, you may capture it as if it had only moved 1 square forward. Must be claimed immediately on the very next move."
+                                    body = "If an opposing Pawn advances 2 squares past your pawn on an adjacent file, you may strike diagonally behind it as if it had only moved 1 square forward. Must be claimed on that exact turn."
                                 )
                             }
                             item {
                                 HandbookArticleCard(
                                     title = "Pawn Promotion",
-                                    body = "When a Pawn reaches the far rank (rank 8 for White, rank 1 for Black), it is immediately promoted to a Queen, Rook, Bishop, or Knight of your choice."
+                                    body = "When a Pawn breaches the enemy baseline (rank 8 for White, rank 1 for Black), it immediately promotes to a Queen, Rook, Bishop, or Knight of your choice."
                                 )
                             }
                         }
@@ -248,13 +256,13 @@ fun HowToPlayDialog(
                             item {
                                 HandbookArticleCard(
                                     title = "Check",
-                                    body = "When the King is directly targeted by an enemy piece. The player must escape check immediately: by moving the King, blocking the attack, or capturing the threatening piece."
+                                    body = "When the King is directly locked in the crosshairs of an enemy piece. Escape check immediately: by evading with the King, interposing a shield piece, or neutralizing the attacking unit."
                                 )
                             }
                             item {
                                 HandbookArticleCard(
                                     title = "Checkmate",
-                                    body = "The King is under attack and has no legal moves to escape. The game ends instantly in a decisive victory for the attacking side."
+                                    body = "The enemy King is under attack and has zero legal escapes remaining. Immediate and decisive victory."
                                 )
                             }
                         }
@@ -263,19 +271,19 @@ fun HowToPlayDialog(
                             item {
                                 HandbookArticleCard(
                                     title = "Stalemate",
-                                    body = "The player to move is NOT in check, but has zero legal moves left on the entire board. Result is an immediate draw."
+                                    body = "The commander to move is NOT in check, but has zero legal moves left on the entire board. Match concludes immediately in an honorable draw."
                                 )
                             }
                             item {
                                 HandbookArticleCard(
                                     title = "Threefold Repetition",
-                                    body = "The exact same board position occurs 3 times with the same player to move and the same rights."
+                                    body = "The exact same tactical board configuration occurs 3 times with the same player to move and identical rights."
                                 )
                             }
                             item {
                                 HandbookArticleCard(
-                                    title = "Insufficient Material",
-                                    body = "Neither side has enough firepower to theoretically force checkmate (e.g., King vs King, or King & Bishop vs King)."
+                                    title = "Insufficient Firepower",
+                                    body = "Neither side retains sufficient forces to theoretically deliver checkmate (e.g. King vs King, or King & Bishop vs King)."
                                 )
                             }
                         }
@@ -288,9 +296,9 @@ fun HowToPlayDialog(
                     text = "“Strategy without tactics is the slowest route to victory.”",
                     fontSize = 11.sp,
                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                    color = Color(0xFFAFA293),
+                    color = ArenaColors.TextMuted,
                     modifier = Modifier.fillMaxWidth(),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    textAlign = TextAlign.Center
                 )
             }
         }
@@ -303,8 +311,8 @@ private fun HandbookArticleCard(title: String, body: String) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF1E1611))
-            .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(12.dp))
+            .background(ArenaColors.TitaniumSurface)
+            .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(12.dp))
             .padding(14.dp)
     ) {
         Column {
@@ -312,13 +320,13 @@ private fun HandbookArticleCard(title: String, body: String) {
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = StudyAmberAccent
+                color = ArenaColors.CyberCyan
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = body,
                 fontSize = 12.sp,
-                color = StudyParchmentCream,
+                color = ArenaColors.TextPrimary,
                 lineHeight = 17.sp
             )
         }
@@ -337,8 +345,8 @@ private fun IllustratedPieceMoveCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF1E1611))
-            .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(12.dp))
+            .background(ArenaColors.TitaniumSurface)
+            .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(12.dp))
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -346,8 +354,8 @@ private fun IllustratedPieceMoveCard(
             modifier = Modifier
                 .size(52.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFF140F0A))
-                .border(1.dp, StudyAmberAccent.copy(alpha = 0.4f), RoundedCornerShape(10.dp)),
+                .background(Color(0xFF090D14))
+                .border(1.dp, ArenaColors.CyberCyan.copy(alpha = 0.4f), RoundedCornerShape(10.dp)),
             contentAlignment = Alignment.Center
         ) {
             PieceView(
@@ -370,20 +378,20 @@ private fun IllustratedPieceMoveCard(
                     text = name,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Black,
-                    color = StudyParchmentCream
+                    color = ArenaColors.TextPrimary
                 )
                 Text(
                     text = symbol,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Medium,
-                    color = StudyAmberAccent
+                    color = ArenaColors.CyberCyan
                 )
             }
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = description,
                 fontSize = 11.sp,
-                color = Color(0xFFB5A99B),
+                color = ArenaColors.TextSecondary,
                 lineHeight = 15.sp
             )
         }

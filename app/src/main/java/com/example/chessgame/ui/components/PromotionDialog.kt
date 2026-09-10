@@ -11,10 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.chessgame.audio.SoundManager
 import com.example.chessgame.engine.PieceColor
 import com.example.chessgame.engine.PieceType
 import com.example.chessgame.theme.*
@@ -28,24 +30,26 @@ fun PromotionDialog(
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(20.dp))
-                .background(DarkSurface)
-                .border(1.5.dp, GoldAccent, RoundedCornerShape(20.dp))
-                .padding(24.dp)
+                .background(ArenaColors.TitaniumSurface)
+                .border(1.5.dp, ArenaColors.CyberCyan, RoundedCornerShape(20.dp))
+                .padding(22.dp)
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "Pawn Promotion",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = GoldAccent
+                    text = "UNIT PROMOTION",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp,
+                    fontFamily = FontFamily.Serif,
+                    color = ArenaColors.CyberCyan
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Choose a piece to promote your pawn:",
-                    fontSize = 13.sp,
-                    color = TextSecondary
+                    text = "Select promotion upgrade unit:",
+                    fontSize = 12.sp,
+                    color = ArenaColors.TextSecondary
                 )
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -64,9 +68,12 @@ fun PromotionDialog(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(DarkSurfaceHover)
-                                .border(1.dp, DarkBorder, RoundedCornerShape(12.dp))
-                                .clickable { onSelect(type) }
+                                .background(Color(0xFF0C1018))
+                                .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(12.dp))
+                                .clickable {
+                                    SoundManager.playClick()
+                                    onSelect(type)
+                                }
                                 .padding(vertical = 12.dp, horizontal = 4.dp)
                         ) {
                             PieceView(
@@ -77,9 +84,9 @@ fun PromotionDialog(
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = name,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = TextPrimary
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ArenaColors.TextPrimary
                             )
                         }
                     }

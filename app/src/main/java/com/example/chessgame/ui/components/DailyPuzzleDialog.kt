@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -28,9 +29,9 @@ import com.example.chessgame.progression.PlayerProgressionManager
 import com.example.chessgame.theme.*
 
 /**
- * Daily Tactical Chess Challenge Dialog.
- * Presents curated chess tactics with real board interaction, instant evaluation,
- * and XP rewards for mastery.
+ * Grandmaster Arena: Daily Tactical Mission Dialog.
+ * Interactive puzzle board with instant tactical evaluation, clue extraction,
+ * and XP rank progression rewards upon completion.
  */
 @Composable
 fun DailyPuzzleDialog(
@@ -50,21 +51,19 @@ fun DailyPuzzleDialog(
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.96f)
-                .shadow(32.dp, RoundedCornerShape(22.dp), spotColor = Color(0x99000000))
+                .shadow(32.dp, RoundedCornerShape(22.dp), spotColor = Color(0xDD000000))
                 .clip(RoundedCornerShape(22.dp))
                 .background(
                     Brush.verticalGradient(
-                        listOf(Color(0xFF241A13), Color(0xFF16100C), Color(0xFF0F0A07))
+                        listOf(
+                            Color(0xFF141A25),
+                            Color(0xFF0C1018),
+                            Color(0xFF070A0F)
+                        )
                     )
                 )
-                .border(
-                    width = 1.5.dp,
-                    brush = Brush.linearGradient(
-                        listOf(StudyAmberAccent, StudyTableFrame, StudyAmberAccent)
-                    ),
-                    shape = RoundedCornerShape(22.dp)
-                )
-                .padding(16.dp)
+                .border(1.5.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(22.dp))
+                .padding(18.dp)
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -83,23 +82,26 @@ fun DailyPuzzleDialog(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                text = "DAILY CHALLENGE",
+                                text = "DAILY MISSION",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Black,
-                                letterSpacing = 1.8.sp,
-                                color = StudyParchmentCream
+                                letterSpacing = 2.sp,
+                                fontFamily = FontFamily.Serif,
+                                color = ArenaColors.CyberCyan
                             )
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(0x33DFB36E))
+                                    .background(ArenaColors.SolarAmber.copy(alpha = 0.2f))
+                                    .border(0.8.dp, ArenaColors.SolarAmber, RoundedCornerShape(6.dp))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = puzzle.theme.uppercase(),
-                                    fontSize = 9.sp,
+                                    fontSize = 8.5.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = StudyAmberAccent
+                                    letterSpacing = 0.8.sp,
+                                    color = ArenaColors.SolarAmber
                                 )
                             }
                         }
@@ -107,7 +109,7 @@ fun DailyPuzzleDialog(
                             text = puzzle.title,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFFAFA293)
+                            color = ArenaColors.TextPrimary
                         )
                     }
 
@@ -115,11 +117,15 @@ fun DailyPuzzleDialog(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(Color(0x33DFB36E))
-                            .clickable { onClose() },
+                            .background(Color(0x22FFFFFF))
+                            .border(1.dp, ArenaColors.TitaniumBorder, CircleShape)
+                            .clickable {
+                                SoundManager.playClick()
+                                onClose()
+                            },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "✕", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = StudyParchmentCream)
+                        Text(text = "✕", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = ArenaColors.TextPrimary)
                     }
                 }
 
@@ -127,7 +133,7 @@ fun DailyPuzzleDialog(
                 Text(
                     text = puzzle.description,
                     fontSize = 11.5.sp,
-                    color = StudyParchmentCream,
+                    color = ArenaColors.TextSecondary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 4.dp)
                 )
@@ -137,8 +143,9 @@ fun DailyPuzzleDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(12.dp))
-                        .border(1.dp, Color(0x33DFB36E), RoundedCornerShape(12.dp))
+                        .shadow(20.dp, RoundedCornerShape(14.dp), spotColor = Color(0xFF000000))
+                        .clip(RoundedCornerShape(14.dp))
+                        .border(1.5.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(14.dp))
                 ) {
                     ChessBoardView(
                         state = gameState,
@@ -163,7 +170,7 @@ fun DailyPuzzleDialog(
                             } else {
                                 // Incorrect move
                                 SoundManager.playClick()
-                                errorMessage = "Not the best tactical line. Try again!"
+                                errorMessage = "Suboptimal move. Telemetry rejected."
                             }
                         },
                         modifier = Modifier.fillMaxSize()
@@ -176,7 +183,7 @@ fun DailyPuzzleDialog(
                         text = errorMessage ?: "",
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFC93B2B),
+                        color = ArenaColors.CrimsonAlert,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -187,22 +194,23 @@ fun DailyPuzzleDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0x35588157))
-                            .border(1.dp, Color(0x66588157), RoundedCornerShape(12.dp))
+                            .background(Color(0x3500E676))
+                            .border(1.dp, Color(0xFF00E676), RoundedCornerShape(12.dp))
                             .padding(10.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "🎉 PUZZLE SOLVED! +$xpEarned XP",
-                            fontSize = 14.sp,
+                            text = "⚡ TACTICAL OBJECTIVE SECURED! +$xpEarned XP",
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Black,
-                            color = Color(0xFF8DA378)
+                            letterSpacing = 1.sp,
+                            color = Color(0xFF69F0AE)
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
                             text = puzzle.explanation,
                             fontSize = 11.sp,
-                            color = StudyParchmentCream,
+                            color = ArenaColors.TextPrimary,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -214,14 +222,14 @@ fun DailyPuzzleDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0x25DFB36E))
-                            .border(1.dp, Color(0x40DFB36E), RoundedCornerShape(10.dp))
+                            .background(ArenaColors.CyberCyan.copy(alpha = 0.15f))
+                            .border(1.dp, ArenaColors.CyberCyan.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
                             .padding(8.dp)
                     ) {
                         Text(
-                            text = "💡 Clue: ${puzzle.hint}",
+                            text = "💡 Tactical Clue: ${puzzle.hint}",
                             fontSize = 11.5.sp,
-                            color = StudyAmberAccent,
+                            color = ArenaColors.CyberCyan,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -234,43 +242,37 @@ fun DailyPuzzleDialog(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (!isSolved) {
-                        OutlinedButton(
-                            onClick = { showHint = true },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = StudyAmberAccent
-                            )
-                        ) {
-                            Text("💡 Hint", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                        }
-
-                        Button(
+                        ArenaPill(
+                            icon = "💡",
+                            label = "Tactical Clue",
                             onClick = {
+                                SoundManager.playClick()
+                                showHint = true
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        ArenaPill(
+                            icon = "🔄",
+                            label = "Reset Board",
+                            onClick = {
+                                SoundManager.playClick()
                                 gameState = parseFEN(puzzle.fen)
                                 errorMessage = null
                             },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF38271D),
-                                contentColor = StudyParchmentCream
-                            )
-                        ) {
-                            Text("🔄 Reset", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                        }
+                            modifier = Modifier.weight(1f)
+                        )
                     } else {
-                        Button(
-                            onClick = onClose,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = StudyAmberAccent,
-                                contentColor = Color(0xFF1B1207)
-                            )
-                        ) {
-                            Text("Claim Reward & Return", fontWeight = FontWeight.Black, fontSize = 13.sp)
-                        }
+                        ArenaButton(
+                            text = "CLAIM REWARD & RETURN",
+                            icon = "⚡",
+                            isPrimary = true,
+                            onClick = {
+                                SoundManager.playClick()
+                                onClose()
+                            },
+                            modifier = Modifier.fillMaxWidth().height(46.dp)
+                        )
                     }
                 }
             }

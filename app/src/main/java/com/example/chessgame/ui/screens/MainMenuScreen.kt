@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -27,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chessgame.R
@@ -40,12 +40,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Screen 2: Game Home Screen
- * Redesigned from a standard menu into a real Game Home Screen:
- * - Top Player Profile Header: Avatar, Level Badge, XP progress bar, Quick stats (Wins, Win Rate %, Streak)
- * - Main Play Area: Visually dominant Primary CTA (Play vs AI), Local 2 Player, and Daily Tactical Challenge
- * - Game Hub: Analyse Game, Theme Room, Honors & Achievements, How to Play, Settings
- * - Full Android safe area insets handling (WindowInsets.systemBars)
+ * Screen 2: Game Home / Arena Lobby
+ * "Grandmaster Arena" Competitive Game Lobby:
+ * - Top Player Command HUD: Avatar, Level, XP Gauge, Rank Title, Win Rate %, Streak Flame
+ * - Hero Battle Arena Card: Dominant "PLAY VS AI" Primary Action with cyber cyan glow
+ * - Game Modes Grid: "PASS & PLAY" (The Duel) and "DAILY TACTICAL MISSION" (Daily Puzzle)
+ * - Tactical Action Dock: Armory (Themes), Debrief (Analysis), Academy (Tutorial), System (Settings)
+ * - Safe area padding (WindowInsets.systemBars)
  */
 @Composable
 fun MainMenuScreen(
@@ -64,54 +65,16 @@ fun MainMenuScreen(
         profile = PlayerProgressionManager.getProfile()
     }
 
-    // Entrance animations
-    val bgAlpha = remember { Animatable(0f) }
-    val heroAlpha = remember { Animatable(0f) }
+    // Smooth staggered entrance animations
+    val entranceAlpha = remember { Animatable(0f) }
     val heroScale = remember { Animatable(0.96f) }
-    val contentAlpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        launch { bgAlpha.animateTo(1f, animationSpec = tween(400)) }
-        launch { heroAlpha.animateTo(1f, animationSpec = tween(500)) }
-        launch { heroScale.animateTo(1f, animationSpec = tween(550, easing = FastOutSlowInEasing)) }
-        launch {
-            delay(120)
-            contentAlpha.animateTo(1f, animationSpec = tween(450))
-        }
+        launch { entranceAlpha.animateTo(1f, animationSpec = tween(450, easing = FastOutSlowInEasing)) }
+        launch { heroScale.animateTo(1f, animationSpec = tween(500, easing = FastOutSlowInEasing)) }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF080A0D))
-    ) {
-        // LAYER 1: Atmospheric Room Background
-        Image(
-            painter = painterResource(id = R.drawable.bg_main_menu),
-            contentDescription = "Study Background",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer { alpha = bgAlpha.value }
-        )
-
-        // LAYER 1.5: Radial Darkening Scrim
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xCC07090C),
-                            Color(0x7506080A),
-                            Color(0x20050709)
-                        ),
-                        radius = 1250f
-                    )
-                )
-        )
-
-        // LAYER 2: Native Compose UI with safe area insets
+    ArenaBackgroundScaffold {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -121,155 +84,208 @@ fun MainMenuScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 18.dp, vertical = 6.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .graphicsLayer { alpha = entranceAlpha.value },
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // ==========================================
-                // 1. TOP SECTION: PLAYER IDENTITY & MOTTO
+                // 1. TOP PLAYER COMMAND HUD
                 // ==========================================
-                Column(
+                ArenaCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .widthIn(max = 420.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(top = 4.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    isHighlighted = false,
+                    onClick = {
+                        showProfileDialog = true
+                    }
                 ) {
-                    // Top Player Profile Bar
-                    PlayerHomeProfileCard(
-                        profile = profile,
-                        onClick = {
-                            SoundManager.playClick()
-                            showProfileDialog = true
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Subtle Motto Quotes
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(horizontalAlignment = Alignment.Start) {
-                            Text(
-                                text = "SAME GAME.\nNEW STORIES.",
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = 1.4.sp,
-                                lineHeight = 10.sp,
-                                color = Color(0x99B8AEA0)
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
+                        // Avatar + Level + Name + Title
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
+                                contentAlignment = Alignment.Center,
                                 modifier = Modifier
-                                    .width(18.dp)
-                                    .height(1.dp)
-                                    .background(Color(0x40DFB36E))
-                            )
+                                    .size(42.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color(0xFF16202E))
+                                    .border(1.2.dp, ArenaColors.CyberCyan, RoundedCornerShape(10.dp))
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.logo_game_emblem),
+                                    contentDescription = "Avatar",
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier.size(30.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = profile.playerName,
+                                        fontSize = 13.5.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = ArenaColors.TextPrimary
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    ArenaBadge(
+                                        text = "LVL ${profile.level}",
+                                        color = ArenaColors.SolarAmber,
+                                        fontSize = 9
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = profile.title.uppercase(),
+                                    fontSize = 9.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.8.sp,
+                                    color = ArenaColors.CyberCyan
+                                )
+                            }
                         }
 
-                        // Compact Center Knight Branding
+                        // Combat Stats (Win Rate & Streak)
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_menu_knight),
-                                contentDescription = "Chess Knight",
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Text(
-                                text = "CHESS",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 4.sp,
-                                color = Color(0xFFF3E2C4),
-                                fontFamily = FontFamily.Serif
-                            )
-                        }
-
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text(
-                                text = "DISCIPLINE\nCREATES FREEDOM.",
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = 1.4.sp,
-                                lineHeight = 10.sp,
-                                color = Color(0x99B8AEA0),
-                                textAlign = TextAlign.End
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Box(
-                                modifier = Modifier
-                                    .width(18.dp)
-                                    .height(1.dp)
-                                    .background(Color(0x40DFB36E))
+                            if (profile.currentStreak > 0) {
+                                ArenaBadge(
+                                    text = "🔥 ${profile.currentStreak}",
+                                    color = ArenaColors.CrimsonAlert,
+                                    fontSize = 10
+                                )
+                            }
+                            ArenaBadge(
+                                text = "${profile.winRate}% WIN",
+                                color = ArenaColors.EmeraldVictory,
+                                fontSize = 10
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // ==========================================
-                // 2. MAIN PLAY AREA (Dominant Primary CTA)
+                // 2. HERO BATTLE ARENA CTA (PRIMARY ACTION)
                 // ==========================================
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .widthIn(max = 420.dp)
-                        .graphicsLayer {
-                            alpha = heroAlpha.value
-                            scaleX = heroScale.value
-                            scaleY = heroScale.value
-                        },
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // HERO CTA: PLAY VS AI (Visually dominant, glowing gold/amber gradient)
-                    HeroPlayCard(
-                        title = "PLAY VS AI",
-                        subtitle = "Tactical Match • 4 Engine Difficulties",
-                        badge = "PRIMARY MATCH",
-                        onClick = {
+                        .scale(heroScale.value)
+                        .shadow(16.dp, RoundedCornerShape(18.dp), spotColor = ArenaColors.CyberCyan.copy(alpha = 0.45f))
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color(0xFF1E2C3D),
+                                    Color(0xFF141E2B)
+                                )
+                            )
+                        )
+                        .border(1.8.dp, ArenaColors.CyberCyan, RoundedCornerShape(18.dp))
+                        .clickable {
                             SoundManager.playClick()
                             onPlayAI()
                         }
-                    )
-
-                    // Secondary Play Row: Local 2 Player & Daily Challenge
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        // Local 2 Player Card
-                        SubPlayCard(
-                            title = "Local 2 Player",
-                            subtitle = "One board. Two minds.",
-                            badge = "PASS & PLAY",
-                            icon = "♟️",
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                SoundManager.playClick()
-                                onPlayLocal()
+                        .padding(18.dp)
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(ArenaColors.CyberCyan)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "PRIMARY BATTLE ARENA",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 1.8.sp,
+                                    color = ArenaColors.CyberCyan
+                                )
                             }
-                        )
 
-                        // Daily Challenge Card
-                        SubPlayCard(
-                            title = "Daily Puzzle",
-                            subtitle = "Tactical mate in 1 or 2",
-                            badge = "+75 XP",
-                            badgeColor = Color(0xFF26C6DA),
-                            icon = "🧩",
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                SoundManager.playClick()
-                                showDailyChallengeDialog = true
+                            ArenaBadge(
+                                text = "4 TIERS",
+                                color = ArenaColors.SolarAmber,
+                                fontSize = 9
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "PLAY VS AI",
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 2.sp,
+                                    fontFamily = FontFamily.SansSerif,
+                                    color = ArenaColors.TextPrimary
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Duel tactical AI from Recruit initiate to Grandmaster Oracle.",
+                                    fontSize = 11.5.sp,
+                                    lineHeight = 16.sp,
+                                    color = ArenaColors.TextSecondary
+                                )
                             }
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            // Large Glowing Emblem Thumbnail
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .size(68.dp)
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(Color(0x3300E5FF))
+                                    .border(1.dp, ArenaColors.CyberCyan.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.logo_game_emblem),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier.size(52.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Big Tactical Deploy Button
+                        ArenaButton(
+                            text = "COMMENCE BATTLE",
+                            icon = "⚔️",
+                            onClick = onPlayAI,
+                            isPrimary = true,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
@@ -277,472 +293,150 @@ fun MainMenuScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // ==========================================
-                // 3. GAME HUB UTILITIES (Compact 2x2 Grid + Full Settings)
+                // 3. GAME MODES ROW (LOCAL 2P & DAILY MISSION)
                 // ==========================================
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .widthIn(max = 420.dp)
-                        .graphicsLayer { alpha = contentAlpha.value },
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    // Mode 1: Pass & Play (Local Duel)
+                    ArenaCard(
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(14.dp),
+                        onClick = onPlayLocal
                     ) {
-                        GameHubPill(
-                            title = "Analyse Game",
-                            subtitle = "Accuracy & mistakes",
-                            iconRes = R.drawable.ic_menu_analyse,
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                SoundManager.playClick()
-                                onOpenAnalysis()
-                            }
-                        )
-
-                        GameHubPill(
-                            title = "Theme Vault",
-                            subtitle = "Boards & pieces",
-                            iconRes = R.drawable.ic_menu_themes,
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                SoundManager.playClick()
-                                onOpenThemes()
-                            }
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        GameHubPill(
-                            title = "Honors & Stats",
-                            subtitle = "${profile.achievements.count { it.isUnlocked }} of ${profile.achievements.size} trophies",
-                            icon = "🏆",
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                SoundManager.playClick()
-                                showProfileDialog = true
-                            }
-                        )
-
-                        GameHubPill(
-                            title = "How to Play",
-                            subtitle = "Illustrated rules",
-                            iconRes = R.drawable.ic_menu_how_to_play,
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                SoundManager.playClick()
-                                onOpenHowToPlay()
-                            }
-                        )
-                    }
-
-                    // Settings Quick Bar
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(44.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0x35160F0B))
-                            .border(1.dp, Color(0x25DFB36E), RoundedCornerShape(12.dp))
-                            .clickable {
-                                SoundManager.playClick()
-                                onOpenSettings()
-                            }
-                            .padding(horizontal = 14.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp)
                         ) {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.ic_menu_settings),
-                                    contentDescription = "Settings",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Text(
-                                    text = "Game Settings & Audio",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = StudyParchmentCream
-                                )
+                                Text(text = "👥", fontSize = 18.sp)
+                                ArenaBadge(text = "OFFLINE", color = ArenaColors.TextSecondary, fontSize = 8)
                             }
+                            Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "Configure →",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = StudyAmberAccent
+                                text = "PASS & PLAY",
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 0.5.sp,
+                                color = ArenaColors.TextPrimary
+                            )
+                            Text(
+                                text = "2 Players • 1 Device",
+                                fontSize = 10.sp,
+                                color = ArenaColors.TextSecondary
+                            )
+                        }
+                    }
+
+                    // Mode 2: Daily Tactical Mission
+                    ArenaCard(
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(14.dp),
+                        isHighlighted = true,
+                        highlightColor = ArenaColors.SolarAmber,
+                        onClick = {
+                            showDailyChallengeDialog = true
+                        }
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = "🎯", fontSize = 18.sp)
+                                ArenaBadge(text = "+150 XP", color = ArenaColors.SolarAmber, fontSize = 8)
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "DAILY PUZZLE",
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 0.5.sp,
+                                color = ArenaColors.TextPrimary
+                            )
+                            Text(
+                                text = "Tactical Checkmate",
+                                fontSize = 10.sp,
+                                color = ArenaColors.SolarAmber
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // ==========================================
-                // 4. FOOTER STATUS
+                // 4. TACTICAL NAVIGATION DOCK (BOTTOM ACTIONS)
+                // [ 🛡️ ARMORY ] [ 📊 DEBRIEF ] [ 📜 ACADEMY ] [ ⚙️ SYSTEM ]
                 // ==========================================
-                Text(
-                    text = "100% OFFLINE  •  FIDE RULES  •  LOCAL PROGRESSION",
-                    fontSize = 8.5.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.8.sp,
-                    color = Color(0x77D5C7B2),
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-            }
-        }
-
-        // ==========================================
-        // DIALOGS
-        // ==========================================
-        if (showProfileDialog) {
-            PlayerProfileDialog(
-                profile = profile,
-                onProfileUpdated = { refreshProfile() },
-                onClose = {
-                    showProfileDialog = false
-                    refreshProfile()
-                }
-            )
-        }
-
-        if (showDailyChallengeDialog) {
-            DailyPuzzleDialog(
-                onSolved = { refreshProfile() },
-                onClose = {
-                    showDailyChallengeDialog = false
-                    refreshProfile()
-                }
-            )
-        }
-    }
-}
-
-/**
- * Top Player Profile Card displaying Avatar, Level, XP bar, and Quick Stats.
- */
-@Composable
-private fun PlayerHomeProfileCard(
-    profile: PlayerProfile,
-    onClick: () -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(targetValue = if (isPressed) 0.98f else 1f, label = "press")
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .scale(scale)
-            .shadow(8.dp, RoundedCornerShape(16.dp), spotColor = Color(0x66000000))
-            .clip(RoundedCornerShape(16.dp))
-            .background(
-                Brush.linearGradient(
-                    listOf(Color(0xDD2A1C12), Color(0xDD1A110B))
-                )
-            )
-            .border(1.2.dp, Color(0x45DFB36E), RoundedCornerShape(16.dp))
-            .clickable(interactionSource = interactionSource, indication = null) { onClick() }
-            .padding(horizontal = 14.dp, vertical = 10.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Level Plinth Seal
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        Brush.radialGradient(
-                            listOf(StudyAmberAccent, Color(0xFF8B5E2B))
-                        )
-                    )
-                    .border(1.dp, Color(0xFFF7EFE4), RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "LVL",
-                        fontSize = 8.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp,
-                        color = Color(0xFF2A1B0E)
-                    )
-                    Text(
-                        text = "%02d".format(profile.level),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color(0xFF140D07)
-                    )
-                }
-            }
-
-            // Player Info & XP Bar
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = profile.playerName,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = StudyParchmentCream
-                        )
-                        Text(
-                            text = profile.title,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = StudyAmberAccent
-                        )
-                    }
-
-                    // Quick Stats Pills (Wins & Win Rate)
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0x35588157))
-                                .border(0.8.dp, Color(0x66588157), RoundedCornerShape(6.dp))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = "${profile.wins}W",
-                                fontSize = 9.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF8DA378)
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0x35DFB36E))
-                                .border(0.8.dp, Color(0x66DFB36E), RoundedCornerShape(6.dp))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = "${profile.winRate}%",
-                                fontSize = 9.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = StudyAmberAccent
-                            )
-                        }
-
-                        if (profile.currentStreak >= 2) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(0x35E5A93C))
-                                    .border(0.8.dp, Color(0x66E5A93C), RoundedCornerShape(6.dp))
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text(
-                                    text = "${profile.currentStreak}🔥",
-                                    fontSize = 9.5.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFE5A93C)
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(5.dp))
-
-                // XP Progress Bar
-                Box(
+                ArenaCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(5.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF140D09))
+                        .padding(bottom = 6.dp),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
-                    Box(
+                    Row(
                         modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(profile.levelProgress.coerceIn(0.05f, 1f))
-                            .clip(CircleShape)
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(Color(0xFFDFB36E), Color(0xFFF3D58C))
-                                )
-                            )
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(2.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "${profile.currentXp} / ${profile.xpForNextLevel} XP",
-                        fontSize = 9.sp,
-                        color = Color(0xFF9E8F7F)
-                    )
-                    Text(
-                        text = "Profile & Honors ➔",
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = StudyAmberAccent
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * Hero Play Card: The visually dominant CTA for starting a match.
- */
-@Composable
-private fun HeroPlayCard(
-    title: String,
-    subtitle: String,
-    badge: String,
-    onClick: () -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(targetValue = if (isPressed) 0.97f else 1f, label = "press")
-
-    // Subtle pulsing amber border glow
-    val infiniteTransition = rememberInfiniteTransition(label = "hero_glow")
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.55f,
-        targetValue = 0.95f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow"
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(86.dp)
-            .scale(scale)
-            .shadow(16.dp, RoundedCornerShape(20.dp), spotColor = Color(0xAA000000))
-            .clip(RoundedCornerShape(20.dp))
-            .background(
-                Brush.horizontalGradient(
-                    listOf(
-                        Color(0xFF382516),
-                        Color(0xFF28180E),
-                        Color(0xFF1E1008)
-                    )
-                )
-            )
-            .border(
-                width = 2.dp,
-                brush = Brush.linearGradient(
-                    listOf(
-                        StudyAmberAccent.copy(alpha = glowAlpha),
-                        Color(0xFF946830).copy(alpha = glowAlpha),
-                        StudyAmberAccent.copy(alpha = glowAlpha)
-                    )
-                ),
-                shape = RoundedCornerShape(20.dp)
-            )
-            .clickable(interactionSource = interactionSource, indication = null) { onClick() }
-            .padding(horizontal = 16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                // Golden Knight Play Icon Shield
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.radialGradient(
-                                listOf(StudyAmberAccent, Color(0xFF8A5D29))
-                            )
-                        )
-                        .border(1.5.dp, Color(0xFFFFF2D6), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_menu_play_ai),
-                        contentDescription = "Play AI",
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-
-                Column {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0x35DFB36E))
-                            .padding(horizontal = 6.dp, vertical = 1.dp)
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp, horizontal = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = badge,
-                            fontSize = 8.5.sp,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.2.sp,
-                            color = StudyAmberAccent
+                        TacticalDockItem(
+                            icon = "🛡️",
+                            label = "ARMORY",
+                            onClick = onOpenThemes
+                        )
+                        TacticalDockItem(
+                            icon = "📊",
+                            label = "DEBRIEF",
+                            onClick = onOpenAnalysis
+                        )
+                        TacticalDockItem(
+                            icon = "📜",
+                            label = "ACADEMY",
+                            onClick = onOpenHowToPlay
+                        )
+                        TacticalDockItem(
+                            icon = "⚙️",
+                            label = "SYSTEM",
+                            onClick = onOpenSettings
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    Text(
-                        text = title,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.5.sp,
-                        color = StudyParchmentCream
-                    )
-
-                    Text(
-                        text = subtitle,
-                        fontSize = 10.5.sp,
-                        color = Color(0xFFC7B7A5)
-                    )
                 }
             }
 
-            // Right Play Arrow Pill
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(StudyAmberAccent)
-                    .border(1.dp, Color(0xFFFFF2D6), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "▶",
-                    fontSize = 14.sp,
-                    color = Color(0xFF1B1107),
-                    modifier = Modifier.offset(x = 1.dp)
+            // Player Profile Dialog Modal
+            if (showProfileDialog) {
+                PlayerProfileDialog(
+                    profile = profile,
+                    onProfileUpdated = { refreshProfile() },
+                    onClose = {
+                        showProfileDialog = false
+                        refreshProfile()
+                    }
+                )
+            }
+
+            // Daily Puzzle Challenge Modal
+            if (showDailyChallengeDialog) {
+                DailyPuzzleDialog(
+                    onSolved = { refreshProfile() },
+                    onClose = {
+                        showDailyChallengeDialog = false
+                        refreshProfile()
+                    }
                 )
             }
         }
@@ -750,136 +444,32 @@ private fun HeroPlayCard(
 }
 
 /**
- * Sub Play Card for Local 2 Player and Daily Challenge.
+ * Individual icon + label button in the bottom tactical dock.
  */
 @Composable
-private fun SubPlayCard(
-    title: String,
-    subtitle: String,
-    badge: String,
-    badgeColor: Color = StudyAmberAccent,
+private fun TacticalDockItem(
     icon: String,
-    modifier: Modifier = Modifier,
+    label: String,
     onClick: () -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(targetValue = if (isPressed) 0.97f else 1f, label = "press")
-
-    Box(
-        modifier = modifier
-            .height(88.dp)
-            .scale(scale)
-            .shadow(6.dp, RoundedCornerShape(16.dp), spotColor = Color(0x66000000))
-            .clip(RoundedCornerShape(16.dp))
-            .background(
-                Brush.verticalGradient(
-                    listOf(Color(0xEE241911), Color(0xEE160F09))
-                )
-            )
-            .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(16.dp))
-            .clickable(interactionSource = interactionSource, indication = null) { onClick() }
-            .padding(10.dp),
-        contentAlignment = Alignment.CenterStart
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .clickable {
+                SoundManager.playClick()
+                onClick()
+            }
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = icon, fontSize = 20.sp)
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(badgeColor.copy(alpha = 0.2f))
-                        .padding(horizontal = 5.dp, vertical = 1.dp)
-                ) {
-                    Text(
-                        text = badge,
-                        fontSize = 8.5.sp,
-                        fontWeight = FontWeight.Black,
-                        color = badgeColor
-                    )
-                }
-            }
-
-            Column {
-                Text(
-                    text = title,
-                    fontSize = 13.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = StudyParchmentCream
-                )
-                Text(
-                    text = subtitle,
-                    fontSize = 9.5.sp,
-                    color = Color(0xFFAFA293),
-                    maxLines = 1
-                )
-            }
-        }
-    }
-}
-
-/**
- * Compact Game Hub Pill Card.
- */
-@Composable
-private fun GameHubPill(
-    title: String,
-    subtitle: String,
-    iconRes: Int? = null,
-    icon: String? = null,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(targetValue = if (isPressed) 0.97f else 1f, label = "press")
-
-    Box(
-        modifier = modifier
-            .height(56.dp)
-            .scale(scale)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0x301E140D))
-            .border(1.dp, Color(0x28DFB36E), RoundedCornerShape(12.dp))
-            .clickable(interactionSource = interactionSource, indication = null) { onClick() }
-            .padding(horizontal = 10.dp, vertical = 6.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            if (iconRes != null) {
-                Image(
-                    painter = painterResource(id = iconRes),
-                    contentDescription = title,
-                    modifier = Modifier.size(22.dp)
-                )
-            } else if (icon != null) {
-                Text(text = icon, fontSize = 18.sp)
-            }
-
-            Column {
-                Text(
-                    text = title,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = StudyParchmentCream
-                )
-                Text(
-                    text = subtitle,
-                    fontSize = 9.5.sp,
-                    color = Color(0xFFA59786),
-                    maxLines = 1
-                )
-            }
-        }
+        Text(text = icon, fontSize = 20.sp)
+        Spacer(modifier = Modifier.height(3.dp))
+        Text(
+            text = label,
+            fontSize = 9.5.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 1.sp,
+            color = ArenaColors.TextSecondary
+        )
     }
 }

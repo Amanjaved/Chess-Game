@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,8 +26,8 @@ import com.example.chessgame.audio.SoundManager
 import com.example.chessgame.theme.*
 
 /**
- * Physical Chess Notebook Settings Dialog.
- * Categorized into GAMEPLAY, DISPLAY, and GAME sections with tactile switches.
+ * Grandmaster Arena System Settings Dialog.
+ * Categorized into COMBAT AUDIO, TACTICAL DISPLAY, and LOADOUT PREFERENCES.
  */
 @Composable
 fun SettingsDialog(
@@ -52,18 +53,18 @@ fun SettingsDialog(
             modifier = Modifier
                 .fillMaxWidth(0.95f)
                 .heightIn(max = 580.dp)
-                .shadow(28.dp, RoundedCornerShape(20.dp), spotColor = Color(0xCC000000))
-                .clip(RoundedCornerShape(20.dp))
+                .shadow(32.dp, RoundedCornerShape(22.dp), spotColor = Color(0xDD000000))
+                .clip(RoundedCornerShape(22.dp))
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF231A14),
-                            Color(0xFF16100C),
-                            Color(0xFF0F0B08)
+                        listOf(
+                            Color(0xFF141A25),
+                            Color(0xFF0C1018),
+                            Color(0xFF070A0F)
                         )
                     )
                 )
-                .border(1.5.dp, Color(0x38D4A373), RoundedCornerShape(20.dp))
+                .border(1.5.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(22.dp))
                 .padding(20.dp)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
@@ -75,16 +76,17 @@ fun SettingsDialog(
                 ) {
                     Column {
                         Text(
-                            text = "CHESS SETTINGS",
+                            text = "SYSTEM CONFIG",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 2.sp,
-                            color = StudyParchmentCream
+                            fontFamily = FontFamily.Serif,
+                            color = ArenaColors.CyberCyan
                         )
                         Text(
-                            text = "Tactile Studio Preferences",
+                            text = "Arena Telemetry & Audio Parameters",
                             fontSize = 11.sp,
-                            color = StudyAmberAccent
+                            color = ArenaColors.TextSecondary
                         )
                     }
 
@@ -94,11 +96,11 @@ fun SettingsDialog(
                             onClose()
                         },
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(34.dp)
                             .clip(CircleShape)
-                            .background(Color(0x20FFFFFF))
+                            .background(Color(0x22FFFFFF))
                     ) {
-                        Text("✕", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = StudyParchmentCream)
+                        Text("✕", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = ArenaColors.TextPrimary)
                     }
                 }
 
@@ -109,16 +111,16 @@ fun SettingsDialog(
                     modifier = Modifier.weight(1f)
                 ) {
                     // ==========================================
-                    // 1. GAMEPLAY SECTION
+                    // 1. AUDIO & TELEMETRY SECTION
                     // ==========================================
                     item {
-                        SettingsSectionHeader("GAMEPLAY")
+                        SettingsSectionHeader("AUDIO & VOICE")
                     }
 
                     item {
                         TactileSwitchRow(
                             title = "Voice Announcer",
-                            subtitle = "Real-time spoken check, checkmate & castle",
+                            subtitle = "Spoken combat calls: check, checkmate, castling & promotion",
                             checked = voiceEnabled,
                             onCheckedChange = {
                                 SoundManager.playClick()
@@ -129,8 +131,8 @@ fun SettingsDialog(
 
                     item {
                         TactileSwitchRow(
-                            title = "Sound Effects",
-                            subtitle = "Wood piece strikes, captures & brass bells",
+                            title = "Combat Sound Effects",
+                            subtitle = "Tactile piece impact, captures & check warnings",
                             checked = soundEnabled,
                             onCheckedChange = {
                                 SoundManager.playClick()
@@ -139,10 +141,18 @@ fun SettingsDialog(
                         )
                     }
 
+                    // ==========================================
+                    // 2. TACTICAL DISPLAY
+                    // ==========================================
+                    item {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        SettingsSectionHeader("ARENA DISPLAY & HUD")
+                    }
+
                     item {
                         TactileSwitchRow(
-                            title = "Board Coordinates",
-                            subtitle = "FIDE notation labels (a-h, 1-8) along edges",
+                            title = "Arena Coordinates",
+                            subtitle = "FIDE grid labels (a-h, 1-8) along perimeter",
                             checked = showCoords,
                             onCheckedChange = {
                                 SoundManager.playClick()
@@ -153,8 +163,8 @@ fun SettingsDialog(
 
                     item {
                         TactileSwitchRow(
-                            title = "Legal Move Highlights",
-                            subtitle = "Sage destination dots & terracotta capture rings",
+                            title = "Legal Vector Highlights",
+                            subtitle = "Dynamic cyan deployment dots & capture rings",
                             checked = highlightMoves,
                             onCheckedChange = {
                                 SoundManager.playClick()
@@ -165,8 +175,8 @@ fun SettingsDialog(
 
                     item {
                         TactileSwitchRow(
-                            title = "Auto-Flip Board (Local 2P)",
-                            subtitle = "Rotate board orientation on alternating turns",
+                            title = "Auto-Flip Orientation (Local 2P)",
+                            subtitle = "Invert camera perspective on alternating commander turns",
                             checked = autoFlipLocal,
                             onCheckedChange = {
                                 SoundManager.playClick()
@@ -178,8 +188,8 @@ fun SettingsDialog(
                     if (onShowMoveHintsChanged != null) {
                         item {
                             TactileSwitchRow(
-                                title = "Move Suggestions & Hints",
-                                subtitle = "Top 3 candidate moves & board arrows",
+                                title = "Move Hints & Engine Advice",
+                                subtitle = "Top 3 candidate tactical moves & telemetry arrow preview",
                                 checked = showMoveHints,
                                 onCheckedChange = {
                                     SoundManager.playClick()
@@ -190,62 +200,48 @@ fun SettingsDialog(
                     }
 
                     // ==========================================
-                    // 2. DISPLAY SECTION
+                    // 3. LOADOUT & ARMORY
                     // ==========================================
                     item {
                         Spacer(modifier = Modifier.height(6.dp))
-                        SettingsSectionHeader("DISPLAY & THEMES")
+                        SettingsSectionHeader("ARMORY LOADOUT")
                     }
 
                     item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0x18FFFFFF))
-                                .border(1.dp, Color(0x28FFFFFF), RoundedCornerShape(12.dp))
-                                .padding(12.dp)
-                        ) {
-                            Column(modifier = Modifier.fillMaxWidth()) {
+                        ArenaCard(modifier = Modifier.fillMaxWidth()) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(14.dp)) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Current Board: ${currentBoardTheme.name}",
+                                        text = "Board: ${currentBoardTheme.name}",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = StudyParchmentCream
+                                        color = ArenaColors.TextPrimary
                                     )
                                     Text(
                                         text = "Pieces: ${currentPieceTheme.name}",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = StudyAmberAccent
+                                        color = ArenaColors.CyberCyan
                                     )
                                 }
 
                                 if (onOpenThemes != null) {
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Button(
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    ArenaButton(
+                                        text = "LAUNCH THE ARMORY",
+                                        icon = "🛡️",
+                                        isPrimary = true,
                                         onClick = {
                                             SoundManager.playClick()
                                             onClose()
                                             onOpenThemes()
                                         },
-                                        modifier = Modifier.fillMaxWidth().height(40.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = StudyAmberAccent),
-                                        shape = RoundedCornerShape(8.dp)
-                                    ) {
-                                        Text(
-                                            text = "OPEN THEME STUDIO",
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Black,
-                                            letterSpacing = 1.sp,
-                                            color = Color(0xFF161008)
-                                        )
-                                    }
+                                        modifier = Modifier.fillMaxWidth().height(42.dp)
+                                    )
                                 }
                             }
                         }
@@ -258,17 +254,9 @@ fun SettingsDialog(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "“A calm mind makes the best moves.”",
-                                fontSize = 11.sp,
-                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                                color = Color(0xFFAFA293),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Chess Master Studio • v1.0.0",
+                                text = "Grandmaster Arena • Combat Engine v2.0",
                                 fontSize = 10.sp,
-                                color = Color(0x60FFFFFF)
+                                color = ArenaColors.TextMuted
                             )
                         }
                     }
@@ -285,12 +273,12 @@ private fun SettingsSectionHeader(title: String) {
         fontSize = 11.sp,
         fontWeight = FontWeight.Black,
         letterSpacing = 1.5.sp,
-        color = StudyAmberAccent
+        color = ArenaColors.CyberCyan
     )
 }
 
 /**
- * Tactile brass/wood toggle switch.
+ * Tactical cyber toggle switch.
  */
 @Composable
 private fun TactileSwitchRow(
@@ -316,14 +304,14 @@ private fun TactileSwitchRow(
         Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
             Text(
                 text = title,
-                fontSize = 14.sp,
+                fontSize = 13.5.sp,
                 fontWeight = FontWeight.Bold,
-                color = StudyParchmentCream
+                color = ArenaColors.TextPrimary
             )
             Text(
                 text = subtitle,
                 fontSize = 11.sp,
-                color = Color(0xFFAAA095),
+                color = ArenaColors.TextSecondary,
                 lineHeight = 14.sp
             )
         }
@@ -337,15 +325,15 @@ private fun TactileSwitchRow(
                 .background(
                     if (checked) {
                         Brush.horizontalGradient(
-                            listOf(Color(0xFFD4A373), Color(0xFFB07D48))
+                            listOf(ArenaColors.CyberCyan, Color(0xFF0098A6))
                         )
                     } else {
                         Brush.horizontalGradient(
-                            listOf(Color(0xFF2A2019), Color(0xFF1E1712))
+                            listOf(Color(0xFF1E2838), Color(0xFF151C27))
                         )
                     }
                 )
-                .border(1.dp, if (checked) Color(0xFFF1C79B) else Color(0x30FFFFFF), RoundedCornerShape(13.dp))
+                .border(1.dp, if (checked) ArenaColors.CyberCyan else ArenaColors.TitaniumBorder, RoundedCornerShape(13.dp))
                 .padding(2.dp),
             contentAlignment = Alignment.CenterStart
         ) {
@@ -356,7 +344,7 @@ private fun TactileSwitchRow(
                     .shadow(4.dp, CircleShape)
                     .clip(CircleShape)
                     .background(
-                        if (checked) Color(0xFF1E140B) else Color(0xFFDCD4CB)
+                        if (checked) Color(0xFF05080E) else Color(0xFF90A4AE)
                     )
             )
         }

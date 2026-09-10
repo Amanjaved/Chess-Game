@@ -35,14 +35,16 @@ import androidx.compose.ui.unit.sp
 import com.example.chessgame.ai.MoveClassification
 import com.example.chessgame.ai.MoveSuggestion
 import com.example.chessgame.audio.SoundManager
+import com.example.chessgame.theme.ArenaColors
 import com.example.chessgame.theme.PieceTheme
-import com.example.chessgame.theme.StudyAmberAccent
-import com.example.chessgame.theme.StudyParchmentCream
 
 /**
  * MoveSuggestionSection:
- * Matches the reference design with header, 3 candidate move cards,
- * and a selected move tactical breakdown with engine evaluation score.
+ * "Grandmaster Arena" Tactical Best Moves Coach:
+ * - Header with AI toggle switch
+ * - 3 Candidate move cards (BEST MOVE, STRONG, GOOD)
+ * - Selected move tactical breakdown with evaluation score pill
+ * - Pure visual preview on board (GameState is untouched)
  */
 @Composable
 fun MoveSuggestionSection(
@@ -61,15 +63,15 @@ fun MoveSuggestionSection(
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        Color(0xF018120E),
-                        Color(0xF8120C08)
+                        Color(0xF0141D29),
+                        Color(0xF80E141E)
                     )
                 )
             )
-            .border(1.dp, Color(0x30DFB36E), RoundedCornerShape(16.dp))
+            .border(1.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(16.dp))
             .padding(horizontal = 12.dp, vertical = 10.dp)
     ) {
-        // Section Header matching reference
+        // Section Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -85,15 +87,15 @@ fun MoveSuggestionSection(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
                     Text(
-                        text = "Best Moves",
+                        text = "Tactical Coach",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = StudyParchmentCream
+                        color = ArenaColors.TextPrimary
                     )
                     Text(
-                        text = "Tap a move to see it on the board",
+                        text = "Tap a move to preview on board",
                         fontSize = 10.5.sp,
-                        color = Color(0xFFAFA293)
+                        color = ArenaColors.TextSecondary
                     )
                 }
             }
@@ -104,20 +106,20 @@ fun MoveSuggestionSection(
                 modifier = Modifier.clickable { onToggleHints() }
             ) {
                 Text(
-                    text = "✦ Get hints powered by AI",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = StudyAmberAccent
+                    text = "✦ AI Analysis",
+                    fontSize = 10.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = ArenaColors.SolarAmber
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Switch(
                     checked = suggestions.isNotEmpty() || isCalculating,
                     onCheckedChange = { onToggleHints() },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color(0xFF140D09),
-                        checkedTrackColor = StudyAmberAccent,
-                        uncheckedThumbColor = Color(0xFF8C7E70),
-                        uncheckedTrackColor = Color(0x35FFFFFF)
+                        checkedThumbColor = Color(0xFF090D14),
+                        checkedTrackColor = ArenaColors.SolarAmber,
+                        uncheckedThumbColor = ArenaColors.TextMuted,
+                        uncheckedTrackColor = Color(0x35283548)
                     ),
                     modifier = Modifier.scale(0.72f)
                 )
@@ -137,7 +139,7 @@ fun MoveSuggestionSection(
                 onSelectSuggestion = onSelectSuggestion
             )
 
-            // Selected Move Detail Panel (matches bottom card in reference)
+            // Selected Move Detail Panel
             val activeDetail = selectedSuggestion ?: suggestions.firstOrNull()
             AnimatedVisibility(
                 visible = activeDetail != null,
@@ -161,9 +163,9 @@ fun MoveSuggestionSection(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Tap Hint to generate the top 3 moves with AI analysis.",
+                    text = "Tap Hint to calculate top 3 moves with AI Minimax analysis.",
                     fontSize = 11.sp,
-                    color = Color(0xFFAFA293)
+                    color = ArenaColors.TextSecondary
                 )
             }
         }
@@ -181,7 +183,7 @@ fun HintsCalculatingView(modifier: Modifier = Modifier) {
             .height(68.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(Color(0x22000000))
-            .border(1.dp, Color(0x25DFB36E), RoundedCornerShape(12.dp))
+            .border(1.dp, ArenaColors.SolarAmber.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -189,20 +191,20 @@ fun HintsCalculatingView(modifier: Modifier = Modifier) {
         CircularProgressIndicator(
             modifier = Modifier.size(18.dp),
             strokeWidth = 2.dp,
-            color = StudyAmberAccent
+            color = ArenaColors.SolarAmber
         )
         Spacer(modifier = Modifier.width(10.dp))
         Text(
-            text = "Analyzing board position with AI...",
+            text = "Analyzing position with Minimax heuristics...",
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
-            color = StudyParchmentCream
+            color = ArenaColors.TextPrimary
         )
     }
 }
 
 /**
- * 3 Horizontally scrollable / aligned suggestion cards matching the reference image.
+ * 3 Horizontally scrollable / aligned suggestion cards.
  */
 @Composable
 fun MoveSuggestionRow(
@@ -241,10 +243,7 @@ fun MoveSuggestionRow(
 }
 
 /**
- * Single candidate move card matching reference image:
- * Top: Piece Avatar + Notation
- * Middle: Pill Badge (BEST MOVE / STRONG / GOOD)
- * Bottom: 2-line tactical summary
+ * Single candidate move card.
  */
 @Composable
 fun MoveSuggestionCard(
@@ -258,37 +257,37 @@ fun MoveSuggestionCard(
             "${suggestion.piece.name.lowercase()} from ${suggestion.fromAlgebraic} to ${suggestion.toAlgebraic}."
 
     val badgeColor = when (suggestion.classification) {
-        MoveClassification.BEST -> StudyAmberAccent
-        MoveClassification.STRONG -> Color(0xFFEDE0D0)
-        else -> Color(0xFFAFA293)
+        MoveClassification.BEST -> ArenaColors.SolarAmber
+        MoveClassification.STRONG -> ArenaColors.CyberCyan
+        else -> ArenaColors.EmeraldVictory
     }
 
     Box(
         modifier = modifier
             .width(112.dp)
             .height(118.dp)
-            .shadow(if (isSelected) 8.dp else 2.dp, RoundedCornerShape(12.dp), spotColor = Color(0x66DFB36E))
+            .shadow(if (isSelected) 8.dp else 2.dp, RoundedCornerShape(12.dp), spotColor = badgeColor.copy(alpha = 0.5f))
             .clip(RoundedCornerShape(12.dp))
             .background(
                 if (isSelected) {
                     Brush.verticalGradient(
                         listOf(
-                            Color(0xFF2E2015),
-                            Color(0xFF1F140D)
+                            Color(0xFF223145),
+                            Color(0xFF16202E)
                         )
                     )
                 } else {
                     Brush.verticalGradient(
                         listOf(
-                            Color(0xFF1E1611),
-                            Color(0xFF140D09)
+                            Color(0xFF182230),
+                            Color(0xFF101722)
                         )
                     )
                 }
             )
             .border(
                 width = if (isSelected) 1.8.dp else 1.dp,
-                color = if (isSelected) StudyAmberAccent else Color(0x30DFB36E),
+                color = if (isSelected) badgeColor else ArenaColors.TitaniumBorder,
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable { onClick() }
@@ -317,7 +316,7 @@ fun MoveSuggestionCard(
                     text = suggestion.notation,
                     fontSize = 12.5.sp,
                     fontWeight = FontWeight.Bold,
-                    color = StudyParchmentCream
+                    color = ArenaColors.TextPrimary
                 )
             }
 
@@ -326,7 +325,7 @@ fun MoveSuggestionCard(
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
                     .background(badgeColor.copy(alpha = 0.18f))
-                    .border(0.8.dp, badgeColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                    .border(0.8.dp, badgeColor.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
                 Text(
@@ -338,12 +337,12 @@ fun MoveSuggestionCard(
                 )
             }
 
-            // Short Description (2 lines)
+            // Short Description
             Text(
                 text = suggestion.explanation,
                 fontSize = 9.5.sp,
                 lineHeight = 12.5.sp,
-                color = Color(0xFFC7BBAE),
+                color = ArenaColors.TextSecondary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -353,10 +352,7 @@ fun MoveSuggestionCard(
 
 /**
  * MoveExplanationCard:
- * Matches the selected move detail card at the bottom of the reference image:
- * Left: Piece thumbnail/watermark
- * Middle: ★ BEST MOVE + Notation + full rationale
- * Right: Evaluation score pill (+0.42 / Evaluation)
+ * Tactical breakdown shown for the selected move suggestion.
  */
 @Composable
 fun MoveExplanationCard(
@@ -365,12 +361,18 @@ fun MoveExplanationCard(
     onClearSelection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val highlightColor = when (suggestion.classification) {
+        MoveClassification.BEST -> ArenaColors.SolarAmber
+        MoveClassification.STRONG -> ArenaColors.CyberCyan
+        else -> ArenaColors.EmeraldVictory
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xF0120D09))
-            .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(12.dp))
+            .background(Color(0xF00F1520))
+            .border(1.dp, highlightColor.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
             .padding(10.dp)
     ) {
         Row(
@@ -384,8 +386,8 @@ fun MoveExplanationCard(
                 modifier = Modifier
                     .size(42.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0x33000000))
-                    .border(0.8.dp, Color(0x25DFB36E), RoundedCornerShape(8.dp))
+                    .background(Color(0xFF17202C))
+                    .border(0.8.dp, highlightColor.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
             ) {
                 PieceView(
                     type = suggestion.piece,
@@ -405,7 +407,7 @@ fun MoveExplanationCard(
                         fontSize = 9.5.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 0.8.sp,
-                        color = StudyAmberAccent
+                        color = highlightColor
                     )
                 }
 
@@ -413,7 +415,7 @@ fun MoveExplanationCard(
                     text = suggestion.notation,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = StudyParchmentCream
+                    color = ArenaColors.TextPrimary
                 )
 
                 Spacer(modifier = Modifier.height(2.dp))
@@ -422,7 +424,7 @@ fun MoveExplanationCard(
                     text = suggestion.explanation,
                     fontSize = 10.5.sp,
                     lineHeight = 14.sp,
-                    color = Color(0xFFC7BBAE),
+                    color = ArenaColors.TextSecondary,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -430,7 +432,7 @@ fun MoveExplanationCard(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            // Right: Centipawn Evaluation Badge (+0.42 / Evaluation)
+            // Right: Centipawn Evaluation Badge
             val evalText = if (suggestion.evaluation >= 900.0) {
                 "+Mate"
             } else if (suggestion.evaluation <= -900.0) {
@@ -443,8 +445,8 @@ fun MoveExplanationCard(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0x22DFB36E))
-                    .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(8.dp))
+                    .background(highlightColor.copy(alpha = 0.16f))
+                    .border(1.dp, highlightColor.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                     .padding(horizontal = 10.dp, vertical = 6.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -453,13 +455,13 @@ fun MoveExplanationCard(
                         text = evalText,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Black,
-                        color = StudyParchmentCream
+                        color = ArenaColors.TextPrimary
                     )
                     Text(
-                        text = "Evaluation",
+                        text = "Eval",
                         fontSize = 8.5.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFFAFA293)
+                        fontWeight = FontWeight.Bold,
+                        color = highlightColor
                     )
                 }
             }

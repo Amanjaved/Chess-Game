@@ -3,9 +3,11 @@ package com.example.chessgame.ui.screens
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -18,24 +20,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chessgame.R
+import com.example.chessgame.theme.ArenaColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Screen 1: Splash / Intro
- * Minimalist luxury chess branding:
- * - Deep charcoal / near-black background (#080A0D)
- * - Minimalist gold & ivory knight emblem with ambient studio lighting
- * - Elegant CHESS wordmark and "CLASSIC STRATEGY. REIMAGINED." subtitle
- * - Perspective dark chessboard on lower section fading into darkness
- * - REAL Jetpack Compose rounded loading bar with warm gold gradient & subtle glow
- * - "GOOD MOVES TAKE TIME" subtitle
- * - Safe area padding for edge-to-edge Android gesture navigation bar
+ * Screen 1: Game Splash & Boot Sequence
+ * "Grandmaster Arena / Tactical Monolith" Game Identity:
+ * - Futuristic atmospheric arena environment
+ * - High-impact metallic Knight-King game emblem with cyan/amber halo
+ * - GRANDMASTER ARENA wordmark & tactical combat subtitle
+ * - Dynamic energy loading bar with multi-phase engine boot status
+ * - Tap to fast-skip into Game Lobby
  */
 @Composable
 fun IntroScreen(
@@ -46,66 +47,63 @@ fun IntroScreen(
 
     // Visual entrance & exit animation states
     val screenAlpha = remember { Animatable(0f) }
-    val contentScale = remember { Animatable(0.97f) }
+    val contentScale = remember { Animatable(0.95f) }
     val progressAnim = remember { Animatable(0f) }
 
-    // Subtle ambient gold highlight breathing
-    val infiniteTransition = rememberInfiniteTransition(label = "ambient_glow")
-    val ambientGlow by infiniteTransition.animateFloat(
-        initialValue = 0.0f,
-        targetValue = 0.16f,
+    // Ambient emblem breathing pulse
+    val infiniteTransition = rememberInfiniteTransition(label = "emblem_pulse")
+    val pulseGlow by infiniteTransition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 0.85f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2400, easing = FastOutSlowInEasing),
+            animation = tween(1600, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "ambient_glow_anim"
+        label = "pulse"
     )
 
     fun finishIntro() {
         if (!isFinished) {
             isFinished = true
             coroutineScope.launch {
-                screenAlpha.animateTo(0f, animationSpec = tween(300, easing = FastOutSlowInEasing))
+                screenAlpha.animateTo(0f, animationSpec = tween(250, easing = FastOutSlowInEasing))
                 onFinish()
             }
         }
     }
 
     LaunchedEffect(Unit) {
-        // Entrance fade & subtle scale
         launch {
-            screenAlpha.animateTo(1f, animationSpec = tween(650, easing = LinearOutSlowInEasing))
+            screenAlpha.animateTo(1f, animationSpec = tween(400, easing = LinearOutSlowInEasing))
         }
         launch {
-            contentScale.animateTo(1.0f, animationSpec = tween(950, easing = FastOutSlowInEasing))
+            contentScale.animateTo(1.0f, animationSpec = tween(600, easing = FastOutSlowInEasing))
         }
 
-        // Realistic multi-stage loading progression
-        delay(250)
-        progressAnim.animateTo(0.25f, animationSpec = tween(500, easing = FastOutSlowInEasing))
-        delay(120)
-        progressAnim.animateTo(0.58f, animationSpec = tween(600, easing = FastOutSlowInEasing))
+        // Multi-stage tactical engine boot sequence
         delay(150)
-        progressAnim.animateTo(0.85f, animationSpec = tween(500, easing = FastOutSlowInEasing))
-        delay(120)
-        progressAnim.animateTo(1.0f, animationSpec = tween(400, easing = FastOutSlowInEasing))
-
-        // Intentional brief hold at 100%
-        delay(250)
+        progressAnim.animateTo(0.32f, animationSpec = tween(350, easing = FastOutSlowInEasing))
+        delay(100)
+        progressAnim.animateTo(0.68f, animationSpec = tween(400, easing = FastOutSlowInEasing))
+        delay(100)
+        progressAnim.animateTo(0.92f, animationSpec = tween(300, easing = FastOutSlowInEasing))
+        delay(80)
+        progressAnim.animateTo(1.0f, animationSpec = tween(250, easing = FastOutSlowInEasing))
+        delay(200)
         finishIntro()
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF080A0D))
+            .background(ArenaColors.VoidAbyss)
             .clickable(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             ) {
                 if (!isFinished) {
                     coroutineScope.launch {
-                        progressAnim.animateTo(1f, animationSpec = tween(120))
+                        progressAnim.animateTo(1f, animationSpec = tween(80))
                         finishIntro()
                     }
                 }
@@ -116,33 +114,101 @@ fun IntroScreen(
                 scaleY = contentScale.value
             }
     ) {
-        // Master minimalist chess background artwork
+        // LAYER 1: Arena Monolith Background
         Image(
-            painter = painterResource(id = R.drawable.splash_chess_minimal),
-            contentDescription = "Chess Splash",
+            painter = painterResource(id = R.drawable.bg_arena_monolith),
+            contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
 
-        // Subtle ambient warm gold breathing light overlay
-        if (ambientGlow > 0.001f) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                Color(0xFFDFB36E).copy(alpha = ambientGlow),
-                                Color(0xFFC69B56).copy(alpha = ambientGlow * 0.4f),
-                                Color.Transparent
-                            ),
-                            radius = 900f
-                        )
+        // LAYER 1.5: Deep Scrim Overlay
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xEE090D14),
+                            Color(0xCC0B111A),
+                            Color(0x55070A0F)
+                        ),
+                        radius = 1200f
                     )
+                )
+        )
+
+        // LAYER 2: Hero Emblem & Branding (Centered)
+        Column(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(bottom = 60.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Emblem with glowing halo
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(170.dp)
+            ) {
+                // Radial energy halo
+                Box(
+                    modifier = Modifier
+                        .size(150.dp)
+                        .clip(CircleShape)
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(
+                                    ArenaColors.CyberCyan.copy(alpha = pulseGlow * 0.45f),
+                                    ArenaColors.SolarAmber.copy(alpha = pulseGlow * 0.20f),
+                                    Color.Transparent
+                                )
+                            )
+                        )
+                )
+
+                // Master Game Emblem
+                Image(
+                    painter = painterResource(id = R.drawable.logo_game_emblem),
+                    contentDescription = "Grandmaster Arena Emblem",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .size(136.dp)
+                        .shadow(24.dp, RoundedCornerShape(20.dp), spotColor = ArenaColors.CyberCyan)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Game Wordmark
+            Text(
+                text = "GRANDMASTER",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 4.sp,
+                fontFamily = FontFamily.SansSerif,
+                color = ArenaColors.TextPrimary
+            )
+            Text(
+                text = "ARENA",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 8.sp,
+                fontFamily = FontFamily.SansSerif,
+                color = ArenaColors.CyberCyan
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "TACTICAL CHESS COMBAT",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.5.sp,
+                color = ArenaColors.TextSecondary
             )
         }
 
-        // REAL Jetpack Compose Loading Bar & Subtitle (pinned cleanly above navigation safe area)
+        // LAYER 3: Energy Progress Bar & Boot Status
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -151,72 +217,58 @@ fun IntroScreen(
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 28.dp),
+                    .padding(bottom = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Real Jetpack Compose loading bar with rounded pill shape, dark track, warm gold progress & subtle glow
+                val progress = progressAnim.value
+
+                // Status text based on boot phase
+                val statusText = when {
+                    progress < 0.35f -> "INITIALIZING TACTICAL CHESS ENGINE..."
+                    progress < 0.70f -> "CALIBRATING MINIMAX HEURISTICS..."
+                    progress < 0.95f -> "SYNCHRONIZING GRANDMASTER ARENA..."
+                    else -> "ARENA ONLINE • TAP TO COMMENCE"
+                }
+
+                Text(
+                    text = statusText,
+                    fontSize = 9.5.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.8.sp,
+                    color = if (progress >= 0.95f) ArenaColors.CyberCyan else ArenaColors.TextSecondary
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // High-tech energy progress bar
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(0.70f)
-                        .height(5.dp)
-                        .shadow(
-                            elevation = 6.dp,
-                            shape = RoundedCornerShape(99.dp),
-                            spotColor = Color(0xFFDFB36E).copy(alpha = 0.45f),
-                            ambientColor = Color(0xFFDFB36E).copy(alpha = 0.25f)
-                        )
-                        .clip(RoundedCornerShape(99.dp))
-                        .background(Color(0xFF1B1E24))
+                        .fillMaxWidth(0.65f)
+                        .height(6.dp)
+                        .shadow(8.dp, RoundedCornerShape(3.dp), spotColor = ArenaColors.CyberCyan.copy(alpha = 0.5f))
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(Color(0xFF131A24))
+                        .border(0.8.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(3.dp))
                 ) {
-                    val currentProgress = progressAnim.value
-                    if (currentProgress > 0.01f) {
+                    if (progress > 0.01f) {
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
-                                .fillMaxWidth(currentProgress.coerceIn(0f, 1f))
-                                .clip(RoundedCornerShape(99.dp))
+                                .fillMaxWidth(progress.coerceIn(0f, 1f))
+                                .clip(RoundedCornerShape(3.dp))
                                 .background(
                                     Brush.horizontalGradient(
-                                        colors = listOf(
-                                            Color(0xFFC69B56),
-                                            Color(0xFFF3D28E),
-                                            Color(0xFFDFB36E)
+                                        listOf(
+                                            ArenaColors.CyberCyanDim,
+                                            ArenaColors.CyberCyan,
+                                            ArenaColors.SolarAmber
                                         )
                                     )
                                 )
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // Typography under loading bar
-                Text(
-                    text = "GOOD MOVES TAKE TIME",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium,
-                    letterSpacing = 3.5.sp,
-                    color = Color(0xFF9E9B95)
-                )
             }
         }
     }
-}
-
-@Preview(name = "Phone 390x844", widthDp = 390, heightDp = 844)
-@Composable
-private fun IntroScreenPreview390x844() {
-    IntroScreen(onFinish = {})
-}
-
-@Preview(name = "Phone 430x932", widthDp = 430, heightDp = 932)
-@Composable
-private fun IntroScreenPreview430x932() {
-    IntroScreen(onFinish = {})
-}
-
-@Preview(name = "Phone 375x667", widthDp = 375, heightDp = 667)
-@Composable
-private fun IntroScreenPreview375x667() {
-    IntroScreen(onFinish = {})
 }

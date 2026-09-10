@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -28,13 +29,8 @@ import com.example.chessgame.engine.Move
 import com.example.chessgame.theme.*
 
 /**
- * Illustrated Parchment Move History Ledger.
- * Styled as a player's official scoresheet with:
- * - Move numbers (e.g. 18.)
- * - White and Black move SAN
- * - Tap-to-jump capability
- * - Dynamic indicators (✓, !, +, #)
- * - Current move highlight
+ * Tactical Combat Log (Move History Ledger).
+ * Displays full SAN record, ply numbers, capture/check indicators, and current step highlight.
  */
 @Composable
 fun MoveHistorySheet(
@@ -86,10 +82,18 @@ fun MoveHistorySheet(
             modifier = Modifier
                 .fillMaxWidth(0.95f)
                 .heightIn(max = 540.dp)
-                .shadow(28.dp, RoundedCornerShape(20.dp), spotColor = Color(0xCC000000))
-                .clip(RoundedCornerShape(20.dp))
-                .background(StudyParchmentCream)
-                .border(2.dp, StudyTableFrame, RoundedCornerShape(20.dp))
+                .shadow(32.dp, RoundedCornerShape(22.dp), spotColor = Color(0xDD000000))
+                .clip(RoundedCornerShape(22.dp))
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color(0xFF141A25),
+                            Color(0xFF0C1018),
+                            Color(0xFF080B10)
+                        )
+                    )
+                )
+                .border(1.5.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(22.dp))
                 .padding(20.dp)
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -101,16 +105,17 @@ fun MoveHistorySheet(
                 ) {
                     Column {
                         Text(
-                            text = "MOVE RECORD",
+                            text = "COMBAT LOG",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 2.sp,
-                            color = StudyParchmentInk
+                            fontFamily = FontFamily.Serif,
+                            color = ArenaColors.CyberCyan
                         )
                         Text(
-                            text = "${moves.size} plies recorded • Tap move to inspect",
+                            text = "${moves.size} plies recorded • Real-time telemetry",
                             fontSize = 11.sp,
-                            color = StudyParchmentInkFaded
+                            color = ArenaColors.TextSecondary
                         )
                     }
 
@@ -120,15 +125,15 @@ fun MoveHistorySheet(
                             onClose()
                         },
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(34.dp)
                             .clip(CircleShape)
-                            .background(Color(0x18000000))
+                            .background(Color(0x22FFFFFF))
                     ) {
                         Text(
                             text = "✕",
-                            fontSize = 16.sp,
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = StudyParchmentInk
+                            color = ArenaColors.TextPrimary
                         )
                     }
                 }
@@ -140,7 +145,7 @@ fun MoveHistorySheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0x182B2118))
+                        .background(ArenaColors.TitaniumSurface)
                         .padding(horizontal = 12.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -148,21 +153,21 @@ fun MoveHistorySheet(
                         text = "#",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = StudyParchmentInkFaded,
+                        color = ArenaColors.TextMuted,
                         modifier = Modifier.width(36.dp)
                     )
                     Text(
                         text = "WHITE",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = StudyParchmentInk,
+                        color = ArenaColors.TextPrimary,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
                         text = "BLACK",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = StudyParchmentInk,
+                        color = ArenaColors.TextPrimary,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -177,9 +182,9 @@ fun MoveHistorySheet(
                             .height(160.dp)
                     ) {
                         Text(
-                            text = "No moves made yet.\nBegin the match by moving White.",
+                            text = "No tactical moves recorded yet.\nDeploy forces to initiate telemetry.",
                             fontSize = 13.sp,
-                            color = StudyParchmentInkFaded,
+                            color = ArenaColors.TextMuted,
                             lineHeight = 18.sp,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
@@ -200,7 +205,7 @@ fun MoveHistorySheet(
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(6.dp))
                                     .background(
-                                        if (pair.number % 2 == 0) Color(0x0A000000) else Color.Transparent
+                                        if (pair.number % 2 == 0) Color(0x0CFFFFFF) else Color.Transparent
                                     )
                                     .padding(vertical = 4.dp, horizontal = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -208,10 +213,10 @@ fun MoveHistorySheet(
                                 // Move Number
                                 Text(
                                     text = "${pair.number}.",
-                                    fontSize = 13.sp,
+                                    fontSize = 12.sp,
                                     fontFamily = FontFamily.Monospace,
                                     fontWeight = FontWeight.Bold,
-                                    color = StudyParchmentInkFaded,
+                                    color = ArenaColors.TextMuted,
                                     modifier = Modifier.width(36.dp)
                                 )
 
@@ -228,7 +233,12 @@ fun MoveHistorySheet(
                                         .weight(1f)
                                         .clip(RoundedCornerShape(6.dp))
                                         .background(
-                                            if (isWhiteActive) Color(0x35D4A373) else Color.Transparent
+                                            if (isWhiteActive) ArenaColors.CyberCyan.copy(alpha = 0.2f) else Color.Transparent
+                                        )
+                                        .border(
+                                            width = if (isWhiteActive) 1.dp else 0.dp,
+                                            color = if (isWhiteActive) ArenaColors.CyberCyan else Color.Transparent,
+                                            shape = RoundedCornerShape(6.dp)
                                         )
                                         .clickable {
                                             SoundManager.playClick()
@@ -240,16 +250,16 @@ fun MoveHistorySheet(
                                 ) {
                                     Text(
                                         text = pair.whiteMove.san.ifEmpty { "..." },
-                                        fontSize = 13.sp,
+                                        fontSize = 12.5.sp,
                                         fontFamily = FontFamily.Monospace,
                                         fontWeight = if (isWhiteActive) FontWeight.Black else FontWeight.SemiBold,
-                                        color = if (isWhiteActive) Color(0xFF6E4314) else StudyParchmentInk
+                                        color = if (isWhiteActive) ArenaColors.CyberCyan else ArenaColors.TextPrimary
                                     )
                                     Text(
                                         text = whiteIndicator,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (whiteIndicator == "#") Color(0xFFC62828) else StudyParchmentInkFaded
+                                        color = if (whiteIndicator == "#") ArenaColors.CrimsonAlert else ArenaColors.TextMuted
                                     )
                                 }
 
@@ -269,7 +279,12 @@ fun MoveHistorySheet(
                                             .weight(1f)
                                             .clip(RoundedCornerShape(6.dp))
                                             .background(
-                                                if (isBlackActive) Color(0x35D4A373) else Color.Transparent
+                                                if (isBlackActive) ArenaColors.SolarAmber.copy(alpha = 0.2f) else Color.Transparent
+                                            )
+                                            .border(
+                                                width = if (isBlackActive) 1.dp else 0.dp,
+                                                color = if (isBlackActive) ArenaColors.SolarAmber else Color.Transparent,
+                                                shape = RoundedCornerShape(6.dp)
                                             )
                                             .clickable {
                                                 SoundManager.playClick()
@@ -281,16 +296,16 @@ fun MoveHistorySheet(
                                     ) {
                                         Text(
                                             text = pair.blackMove.san,
-                                            fontSize = 13.sp,
+                                            fontSize = 12.5.sp,
                                             fontFamily = FontFamily.Monospace,
                                             fontWeight = if (isBlackActive) FontWeight.Black else FontWeight.SemiBold,
-                                            color = if (isBlackActive) Color(0xFF6E4314) else StudyParchmentInk
+                                            color = if (isBlackActive) ArenaColors.SolarAmber else ArenaColors.TextPrimary
                                         )
                                         Text(
                                             text = blackIndicator,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (blackIndicator == "#") Color(0xFFC62828) else StudyParchmentInkFaded
+                                            color = if (blackIndicator == "#") ArenaColors.CrimsonAlert else ArenaColors.TextMuted
                                         )
                                     }
                                 } else {
@@ -304,33 +319,15 @@ fun MoveHistorySheet(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 // Bottom Action Button
-                androidx.compose.material3.Button(
+                ArenaButton(
+                    text = "DISMISS LOG",
+                    icon = "✕",
+                    isPrimary = true,
                     onClick = {
                         SoundManager.playClick()
                         onClose()
                     },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = StudyAmberAccent),
                     modifier = Modifier.fillMaxWidth().height(44.dp)
-                ) {
-                    Text(
-                        text = "CLOSE RECORD",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp,
-                        color = Color(0xFF1B140E)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(
-                    text = "“Every move tells a story.”",
-                    fontSize = 11.sp,
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                    color = StudyParchmentInkFaded,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
             }
         }

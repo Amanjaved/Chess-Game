@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,8 +24,8 @@ import com.example.chessgame.engine.PieceType
 import com.example.chessgame.theme.*
 
 /**
- * Handcrafted Wooden/Parchment Promotion Tray.
- * Displays Queen, Rook, Bishop, Knight sitting on carved wooden plinths.
+ * Grandmaster Arena Tactical Promotion Tray.
+ * Displays Queen, Rook, Bishop, Knight resting in energized titanium chambers.
  */
 @Composable
 fun PromotionTray(
@@ -36,19 +37,23 @@ fun PromotionTray(
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.92f)
-                .shadow(24.dp, RoundedCornerShape(20.dp), spotColor = Color(0xAA000000))
-                .clip(RoundedCornerShape(20.dp))
+                .shadow(32.dp, RoundedCornerShape(22.dp), spotColor = Color(0xDD000000))
+                .clip(RoundedCornerShape(22.dp))
                 .background(
                     Brush.verticalGradient(
-                        listOf(Color(0xFF2E2016), Color(0xFF1E150F), Color(0xFF140D09))
+                        listOf(
+                            Color(0xFF141A25),
+                            Color(0xFF0C1018),
+                            Color(0xFF070A0F)
+                        )
                     )
                 )
                 .border(
-                    width = 2.dp,
-                    brush = Brush.linearGradient(
-                        listOf(StudyAmberAccent, StudyTableFrame, StudyAmberAccent)
+                    width = 1.5.dp,
+                    brush = Brush.verticalGradient(
+                        listOf(ArenaColors.CyberCyan, ArenaColors.TitaniumBorder)
                     ),
-                    shape = RoundedCornerShape(20.dp)
+                    shape = RoundedCornerShape(22.dp)
                 )
                 .padding(22.dp)
         ) {
@@ -57,40 +62,34 @@ fun PromotionTray(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "PAWN PROMOTION",
+                    text = "UNIT PROMOTION",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp,
-                    color = StudyParchmentCream
+                    letterSpacing = 2.5.sp,
+                    fontFamily = FontFamily.Serif,
+                    color = ArenaColors.CyberCyan
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Choose your new piece",
-                    fontSize = 12.sp,
-                    color = StudyAmberAccent
+                    text = "Select battlefield reinforcement unit",
+                    fontSize = 11.5.sp,
+                    color = ArenaColors.TextSecondary
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
-                val choices = listOf(
-                    Pair(PieceType.QUEEN, "QUEEN"),
-                    Pair(PieceType.ROOK, "ROOK"),
-                    Pair(PieceType.BISHOP, "BISHOP"),
-                    Pair(PieceType.KNIGHT, "KNIGHT")
-                )
+                val row1 = listOf(Pair(PieceType.QUEEN, "QUEEN"), Pair(PieceType.ROOK, "ROOK"))
+                val row2 = listOf(Pair(PieceType.BISHOP, "BISHOP"), Pair(PieceType.KNIGHT, "KNIGHT"))
 
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    val row1 = listOf(Pair(PieceType.QUEEN, "QUEEN"), Pair(PieceType.ROOK, "ROOK"))
-                    val row2 = listOf(Pair(PieceType.BISHOP, "BISHOP"), Pair(PieceType.KNIGHT, "KNIGHT"))
-
                     listOf(row1, row2).forEach { rowChoices ->
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             rowChoices.forEach { (type, label) ->
@@ -98,33 +97,29 @@ fun PromotionTray(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier
                                         .weight(1f)
-                                        .shadow(8.dp, RoundedCornerShape(14.dp))
+                                        .shadow(4.dp, RoundedCornerShape(14.dp), spotColor = ArenaColors.CyberCyan)
                                         .clip(RoundedCornerShape(14.dp))
-                                        .background(
-                                            Brush.verticalGradient(
-                                                listOf(Color(0xFF422E21), Color(0xFF241810))
-                                            )
-                                        )
-                                        .border(1.5.dp, Color(0x35D4A373), RoundedCornerShape(14.dp))
+                                        .background(ArenaColors.TitaniumSurface)
+                                        .border(1.2.dp, ArenaColors.TitaniumBorder, RoundedCornerShape(14.dp))
                                         .clickable {
                                             SoundManager.playClick()
                                             onSelect(type)
                                         }
-                                        .padding(vertical = 16.dp, horizontal = 8.dp)
+                                        .padding(vertical = 12.dp, horizontal = 8.dp)
                                 ) {
                                     PieceView(
                                         type = type,
                                         color = color,
-                                        pieceTheme = pieceTheme,
-                                        modifier = Modifier.size(54.dp)
+                                        modifier = Modifier.size(52.dp),
+                                        pieceTheme = pieceTheme
                                     )
-                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Spacer(modifier = Modifier.height(6.dp))
                                     Text(
                                         text = label,
-                                        fontSize = 12.sp,
+                                        fontSize = 11.5.sp,
                                         fontWeight = FontWeight.Black,
                                         letterSpacing = 1.sp,
-                                        color = StudyParchmentCream
+                                        color = ArenaColors.TextPrimary
                                     )
                                 }
                             }
