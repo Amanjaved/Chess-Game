@@ -15,13 +15,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -33,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chessgame.ai.MoveClassification
 import com.example.chessgame.ai.MoveSuggestion
-import com.example.chessgame.ai.hintBadgeColor
 import com.example.chessgame.audio.SoundManager
 import com.example.chessgame.theme.PieceTheme
 import com.example.chessgame.theme.StudyAmberAccent
@@ -41,7 +41,8 @@ import com.example.chessgame.theme.StudyParchmentCream
 
 /**
  * MoveSuggestionSection:
- * Coordinates the hints calculation state, candidate move cards, and tactical explanation card.
+ * Matches the reference design with header, 3 candidate move cards,
+ * and a selected move tactical breakdown with engine evaluation score.
  */
 @Composable
 fun MoveSuggestionSection(
@@ -50,7 +51,7 @@ fun MoveSuggestionSection(
     isCalculating: Boolean,
     pieceTheme: PieceTheme,
     onSelectSuggestion: (MoveSuggestion?) -> Unit,
-    onCloseHints: () -> Unit,
+    onToggleHints: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -60,47 +61,65 @@ fun MoveSuggestionSection(
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        Color(0xFF231A14),
-                        Color(0xFF18120E)
+                        Color(0xF018120E),
+                        Color(0xF8120C08)
                     )
                 )
             )
-            .border(1.2.dp, Color(0x35D4A373), RoundedCornerShape(16.dp))
+            .border(1.dp, Color(0x30DFB36E), RoundedCornerShape(16.dp))
             .padding(horizontal = 12.dp, vertical = 10.dp)
     ) {
-        // Section Header
+        // Section Header matching reference
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Left: Lightbulb + Title + Subtitle
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "💡",
-                    fontSize = 15.sp
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(bottom = 2.dp)
                 )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "RECOMMENDED MOVES",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 1.2.sp,
-                    color = StudyAmberAccent
-                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                    Text(
+                        text = "Best Moves",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = StudyParchmentCream
+                    )
+                    Text(
+                        text = "Tap a move to see it on the board",
+                        fontSize = 10.5.sp,
+                        color = Color(0xFFAFA293)
+                    )
+                }
             }
 
-            IconButton(
-                onClick = {
-                    SoundManager.playClick()
-                    onCloseHints()
-                },
-                modifier = Modifier.size(28.dp)
+            // Right: AI toggle switch with label
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { onToggleHints() }
             ) {
                 Text(
-                    text = "✕",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFAFA293)
+                    text = "✦ Get hints powered by AI",
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = StudyAmberAccent
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Switch(
+                    checked = suggestions.isNotEmpty() || isCalculating,
+                    onCheckedChange = { onToggleHints() },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color(0xFF140D09),
+                        checkedTrackColor = StudyAmberAccent,
+                        uncheckedThumbColor = Color(0xFF8C7E70),
+                        uncheckedTrackColor = Color(0x35FFFFFF)
+                    ),
+                    modifier = Modifier.scale(0.72f)
                 )
             }
         }
@@ -110,7 +129,7 @@ fun MoveSuggestionSection(
         if (isCalculating) {
             HintsCalculatingView()
         } else if (suggestions.isNotEmpty()) {
-            // Horizontally aligned / scrollable suggestion cards
+            // Horizontally aligned 3 suggestion cards
             MoveSuggestionRow(
                 suggestions = suggestions,
                 selectedSuggestion = selectedSuggestion,
@@ -118,16 +137,18 @@ fun MoveSuggestionSection(
                 onSelectSuggestion = onSelectSuggestion
             )
 
-            // Explanation card for selected suggestion
+            // Selected Move Detail Panel (matches bottom card in reference)
+            val activeDetail = selectedSuggestion ?: suggestions.firstOrNull()
             AnimatedVisibility(
-                visible = selectedSuggestion != null,
+                visible = activeDetail != null,
                 enter = fadeIn(tween(200)) + slideInVertically(tween(200)),
                 exit = fadeOut(tween(150)) + slideOutVertically(tween(150))
             ) {
-                if (selectedSuggestion != null) {
+                if (activeDetail != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     MoveExplanationCard(
-                        suggestion = selectedSuggestion,
+                        suggestion = activeDetail,
+                        pieceTheme = pieceTheme,
                         onClearSelection = { onSelectSuggestion(null) }
                     )
                 }
@@ -136,12 +157,12 @@ fun MoveSuggestionSection(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 12.dp),
+                    .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No legal suggestions available in this position.",
-                    fontSize = 12.sp,
+                    text = "Tap Hint to generate the top 3 moves with AI analysis.",
+                    fontSize = 11.sp,
                     color = Color(0xFFAFA293)
                 )
             }
@@ -157,22 +178,22 @@ fun HintsCalculatingView(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(64.dp)
+            .height(68.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0x18000000))
-            .border(1.dp, Color(0x20FFFFFF), RoundedCornerShape(12.dp))
+            .background(Color(0x22000000))
+            .border(1.dp, Color(0x25DFB36E), RoundedCornerShape(12.dp))
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
         CircularProgressIndicator(
-            modifier = Modifier.size(20.dp),
-            strokeWidth = 2.5.dp,
+            modifier = Modifier.size(18.dp),
+            strokeWidth = 2.dp,
             color = StudyAmberAccent
         )
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(10.dp))
         Text(
-            text = "Finding the strongest moves...",
+            text = "Analyzing board position with AI...",
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             color = StudyParchmentCream
@@ -181,7 +202,7 @@ fun HintsCalculatingView(modifier: Modifier = Modifier) {
 }
 
 /**
- * 3 Horizontally scrollable suggestion cards.
+ * 3 Horizontally scrollable / aligned suggestion cards matching the reference image.
  */
 @Composable
 fun MoveSuggestionRow(
@@ -220,7 +241,10 @@ fun MoveSuggestionRow(
 }
 
 /**
- * Single candidate move card matching the app's tactile walnut & gold identity.
+ * Single candidate move card matching reference image:
+ * Top: Piece Avatar + Notation
+ * Middle: Pill Badge (BEST MOVE / STRONG / GOOD)
+ * Bottom: 2-line tactical summary
  */
 @Composable
 fun MoveSuggestionCard(
@@ -230,75 +254,57 @@ fun MoveSuggestionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val badgeBg = suggestion.classification.hintBadgeColor
-    val badgeTextColor = if (suggestion.classification == MoveClassification.BEST) {
-        Color(0xFF1A120B)
-    } else {
-        Color(0xFF140E0A)
-    }
-
     val a11yDescription = "Best move recommendation ${suggestion.rank}: ${suggestion.classification.label}, " +
             "${suggestion.piece.name.lowercase()} from ${suggestion.fromAlgebraic} to ${suggestion.toAlgebraic}."
+
+    val badgeColor = when (suggestion.classification) {
+        MoveClassification.BEST -> StudyAmberAccent
+        MoveClassification.STRONG -> Color(0xFFEDE0D0)
+        else -> Color(0xFFAFA293)
+    }
 
     Box(
         modifier = modifier
             .width(112.dp)
-            .height(86.dp)
+            .height(118.dp)
             .shadow(if (isSelected) 8.dp else 2.dp, RoundedCornerShape(12.dp), spotColor = Color(0x66DFB36E))
             .clip(RoundedCornerShape(12.dp))
             .background(
                 if (isSelected) {
                     Brush.verticalGradient(
                         listOf(
-                            Color(0xFF382718),
-                            Color(0xFF271A10)
+                            Color(0xFF2E2015),
+                            Color(0xFF1F140D)
                         )
                     )
                 } else {
                     Brush.verticalGradient(
                         listOf(
-                            Color(0xFF1F1712),
-                            Color(0xFF150F0B)
+                            Color(0xFF1E1611),
+                            Color(0xFF140D09)
                         )
                     )
                 }
             )
             .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) StudyAmberAccent else Color(0x35D4A373),
+                width = if (isSelected) 1.8.dp else 1.dp,
+                color = if (isSelected) StudyAmberAccent else Color(0x30DFB36E),
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable { onClick() }
             .semantics { contentDescription = a11yDescription }
-            .padding(horizontal = 8.dp, vertical = 6.dp)
+            .padding(8.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Top Row: Classification Badge + Piece Thumbnail
+            // Top: Piece Icon + Notation
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Classification Pill
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(badgeBg)
-                        .padding(horizontal = 5.dp, vertical = 1.5.dp)
-                ) {
-                    Text(
-                        text = suggestion.classification.label,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Black,
-                        color = badgeTextColor
-                    )
-                }
-
-                // Small piece thumbnail
-                Box(modifier = Modifier.size(20.dp)) {
+                Box(modifier = Modifier.size(24.dp)) {
                     PieceView(
                         type = suggestion.piece,
                         color = suggestion.color,
@@ -306,73 +312,56 @@ fun MoveSuggestionCard(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-            }
-
-            // Middle: Move Notation (e.g. g1 → f3 or SAN)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = suggestion.fromAlgebraic,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = StudyParchmentCream
-                )
-                Text(
-                    text = " → ",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = StudyAmberAccent
-                )
-                Text(
-                    text = suggestion.toAlgebraic,
-                    fontSize = 13.sp,
+                    text = suggestion.notation,
+                    fontSize = 12.5.sp,
                     fontWeight = FontWeight.Bold,
                     color = StudyParchmentCream
                 )
             }
 
-            // Bottom: Centipawn Evaluation
-            val evalText = if (suggestion.evaluation >= 900.0) {
-                "+M1"
-            } else if (suggestion.evaluation <= -900.0) {
-                "-M1"
-            } else {
-                val prefix = if (suggestion.evaluation > 0) "+" else ""
-                "$prefix${String.format(java.util.Locale.US, "%.2f", suggestion.evaluation)}"
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            // Classification Pill
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(badgeColor.copy(alpha = 0.18f))
+                    .border(0.8.dp, badgeColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
                 Text(
-                    text = "#${suggestion.rank}",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF8C7E70)
-                )
-                Text(
-                    text = evalText,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = if (suggestion.evaluation >= 0) Color(0xFFDFB36E) else Color(0xFFE57373)
+                    text = suggestion.classification.label,
+                    fontSize = 8.5.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 0.5.sp,
+                    color = badgeColor
                 )
             }
+
+            // Short Description (2 lines)
+            Text(
+                text = suggestion.explanation,
+                fontSize = 9.5.sp,
+                lineHeight = 12.5.sp,
+                color = Color(0xFFC7BBAE),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
 
 /**
  * MoveExplanationCard:
- * Tactical breakdown shown when a player taps any candidate move.
+ * Matches the selected move detail card at the bottom of the reference image:
+ * Left: Piece thumbnail/watermark
+ * Middle: ★ BEST MOVE + Notation + full rationale
+ * Right: Evaluation score pill (+0.42 / Evaluation)
  */
 @Composable
 fun MoveExplanationCard(
     suggestion: MoveSuggestion,
+    pieceTheme: PieceTheme,
     onClearSelection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -380,89 +369,99 @@ fun MoveExplanationCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF140D09))
-            .border(1.dp, Color(0x40DFB36E), RoundedCornerShape(12.dp))
+            .background(Color(0xF0120D09))
+            .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(12.dp))
             .padding(10.dp)
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Left: Piece Avatar
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0x33000000))
+                    .border(0.8.dp, Color(0x25DFB36E), RoundedCornerShape(8.dp))
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "✦",
-                        fontSize = 12.sp,
-                        color = StudyAmberAccent
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text(
-                        text = "${suggestion.classification.label}: ${suggestion.fromAlgebraic} → ${suggestion.toAlgebraic}",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 0.5.sp,
-                        color = StudyParchmentCream
-                    )
-                    if (suggestion.san.isNotEmpty()) {
-                        Text(
-                            text = " (${suggestion.san})",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = StudyAmberAccent
-                        )
-                    }
-                }
-
-                // Clear Preview text button
-                Text(
-                    text = "Clear Preview",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFAFA293),
-                    modifier = Modifier
-                        .clickable { onClearSelection() }
-                        .padding(4.dp)
+                PieceView(
+                    type = suggestion.piece,
+                    color = suggestion.color,
+                    pieceTheme = pieceTheme,
+                    modifier = Modifier.size(32.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
-            // Rationale explanation text
-            Text(
-                text = suggestion.explanation,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Normal,
-                lineHeight = 16.sp,
-                color = Color(0xFFEDE0D0),
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
-            )
+            // Middle: Classification, Notation & Tactical explanation
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "★ ${suggestion.classification.label}",
+                        fontSize = 9.5.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 0.8.sp,
+                        color = StudyAmberAccent
+                    )
+                }
 
-            Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = suggestion.notation,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = StudyParchmentCream
+                )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                Spacer(modifier = Modifier.height(2.dp))
+
+                Text(
+                    text = suggestion.explanation,
+                    fontSize = 10.5.sp,
+                    lineHeight = 14.sp,
+                    color = Color(0xFFC7BBAE),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Right: Centipawn Evaluation Badge (+0.42 / Evaluation)
+            val evalText = if (suggestion.evaluation >= 900.0) {
+                "+Mate"
+            } else if (suggestion.evaluation <= -900.0) {
+                "-Mate"
+            } else {
+                val prefix = if (suggestion.evaluation > 0) "+" else ""
+                "$prefix${String.format(java.util.Locale.US, "%.2f", suggestion.evaluation)}"
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0x22DFB36E))
+                    .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Preview only • Make your move on the board",
-                    fontSize = 10.sp,
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                    color = Color(0xFF8C7E70)
-                )
-
-                val evalText = if (suggestion.evaluation >= 900.0) "+Mate"
-                else if (suggestion.evaluation <= -900.0) "-Mate"
-                else "${if (suggestion.evaluation > 0) "+" else ""}${String.format(java.util.Locale.US, "%.2f", suggestion.evaluation)}"
-
-                Text(
-                    text = "Score: $evalText",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = StudyAmberAccent
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = evalText,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Black,
+                        color = StudyParchmentCream
+                    )
+                    Text(
+                        text = "Evaluation",
+                        fontSize = 8.5.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFFAFA293)
+                    )
+                }
             }
         }
     }

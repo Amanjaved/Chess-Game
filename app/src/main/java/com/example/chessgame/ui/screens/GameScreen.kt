@@ -7,12 +7,17 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,13 +26,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import com.example.chessgame.R
 import com.example.chessgame.ai.AIDifficulty
 import com.example.chessgame.ai.MoveSuggestion
 import com.example.chessgame.ai.MoveSuggestionEngine
@@ -43,9 +49,15 @@ import kotlinx.coroutines.launch
 
 /**
  * Screen 6: Chess Gameplay Screen.
- * Dominant physical tabletop board sitting on a wooden desk.
- * Features tournament parchment scorecards, compact wood & brass controls,
- * cinematic "YOUR MOVE" overlays, and dramatic match conclusion scenes.
+ * Immersive tabletop chess experience redesigned to match the reference design:
+ * - Full-screen atmospheric desk background with central darkening
+ * - Elegant top header: [ < ] CHESS (CLASSIC STRATEGY. REIMAGINED.) [ ⚙️ ] [ ••• ]
+ * - 3-Compartment Player Information Bar: [ You / White ] [ ⏱ 09:48 ] [ AI / Black ]
+ * - Centered physical ChessBoardView with smooth piece animations & legal moves
+ * - Best Moves hint system with 3 candidate move cards & selected move detail box
+ * - Board directional arrow and square highlights for move preview (pure visual preview)
+ * - 4 Bottom compact pill controls: [ ↩ Undo ] [ 💡 Hint ] [ 🔄 New Game ] [ ⇄ Flip Board ]
+ * - Strict Android status bar and navigation bar inset handling
  */
 @Composable
 fun GameScreen(
@@ -77,6 +89,9 @@ fun GameScreen(
     var isAIThinking by remember { mutableStateOf(false) }
     var outcome by remember { mutableStateOf(GameOutcome(isOver = false)) }
 
+    // Board Flip state: supports manual flip toggle as well as default perspective
+    var manualFlip by remember { mutableStateOf(false) }
+
     // Move Hints & Best Move Suggestions State
     var showHints by remember { mutableStateOf(false) }
     var isCalculatingHints by remember { mutableStateOf(false) }
@@ -103,6 +118,10 @@ fun GameScreen(
                 }
                 hintSuggestions = suggestions
                 isCalculatingHints = false
+                if (suggestions.isNotEmpty()) {
+                    // Pre-select the #1 best move for board preview
+                    previewMove = suggestions.first()
+                }
             }
         }
     }
@@ -152,12 +171,13 @@ fun GameScreen(
     val isHumanTurn = if (isAIMode) gameState.turn == humanColor else true
     val isAITurn = isAIMode && gameState.turn == aiColor && !outcome.isOver
 
-    // Board flip logic
-    val isFlipped = if (isAIMode) {
+    // Board flip logic: combines player color preference and manual flip toggle
+    val defaultFlipped = if (isAIMode) {
         humanColor == PieceColor.BLACK
     } else {
         autoFlipLocal && gameState.turn == PieceColor.BLACK
     }
+    val isFlipped = defaultFlipped xor manualFlip
 
     // Announce game start
     LaunchedEffect(Unit) {
@@ -318,24 +338,46 @@ fun GameScreen(
         VoiceAnnouncer.announceDraw("MUTUAL AGREEMENT")
     }
 
-    val topColor = if (isFlipped) PieceColor.WHITE else PieceColor.BLACK
-    val bottomColor = if (isFlipped) PieceColor.BLACK else PieceColor.WHITE
     val lastMove = if (gameState.history.isNotEmpty()) gameState.history.last() else null
 
+    // Root Container with Atmospheric Room Background
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF221913),
-                        Color(0xFF140E0A),
-                        Color(0xFF090604)
-                    ),
-                    radius = 1200f
-                )
-            )
+            .background(Color(0xFF0C0806))
     ) {
+        // ==========================================
+        // LAYER 1: ATMOSPHERIC CHESS DESK BACKGROUND
+        // ==========================================
+        Image(
+            painter = painterResource(id = R.drawable.bg_main_menu),
+            contentDescription = "Chess Desk Environment",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // ==========================================
+        // LAYER 1.5: CENTRAL SCRIM OVERLAY
+        // Keeps center behind board dark and crisp while ambient desk elements frame edges
+        // ==========================================
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xEB0A0705), // ~92% dark center for perfect contrast
+                            Color(0xC4080503), // ~77% mid falloff
+                            Color(0x66060403)  // ~40% ambient desk edge
+                        ),
+                        radius = 1350f
+                    )
+                )
+        )
+
+        // ==========================================
+        // LAYER 2: NATIVE COMPOSE GAMEPLAY UI
+        // ==========================================
         val scrollState = rememberScrollState()
 
         Column(
@@ -349,110 +391,345 @@ fun GameScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // ==========================================
-            // TOP TABLETOP NAVIGATION BAR (VISUALLY CENTERED)
+            // TOP HEADER: [ < ] CHESS [ ⚙️ ] [ ••• ]
             // ==========================================
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0x22FFFFFF))
-                    .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(14.dp))
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                    .height(44.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Back Button (Left)
-                IconButton(
-                    onClick = {
-                        if (gameState.history.isNotEmpty() && !outcome.isOver) {
-                            confirmDialogType = "back"
-                        } else {
-                            onBackToMenu()
-                        }
-                    },
+                // Left: Back button (rounded square, dark translucent)
+                Box(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
-                        .size(36.dp)
+                        .size(38.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0x28FFFFFF))
+                        .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(10.dp))
+                        .clickable {
+                            SoundManager.playClick()
+                            if (gameState.history.isNotEmpty() && !outcome.isOver) {
+                                confirmDialogType = "back"
+                            } else {
+                                onBackToMenu()
+                            }
+                        },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("←", fontSize = 20.sp, fontWeight = FontWeight.Black, color = StudyParchmentCream)
+                    Text(
+                        text = "←",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black,
+                        color = StudyParchmentCream
+                    )
                 }
 
-                // Centered Title & Status
+                // Center: Gold Knight + CHESS + CLASSIC STRATEGY. REIMAGINED.
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_diff_knight),
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (isAIMode) "VS AI" else "LOCAL 2P",
-                            fontSize = 14.sp,
+                            text = "CHESS",
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp,
+                            letterSpacing = 3.sp,
+                            fontFamily = FontFamily.Serif,
+                            color = Color(0xFFF2E9DE)
+                        )
+                    }
+                    Text(
+                        text = "CLASSIC STRATEGY. REIMAGINED.",
+                        fontSize = 8.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.1.sp,
+                        color = StudyAmberAccent
+                    )
+                }
+
+                // Right: Settings [ ⚙️ ] and More [ ••• ]
+                Row(
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // Settings button
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0x28FFFFFF))
+                            .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(10.dp))
+                            .clickable {
+                                SoundManager.playClick()
+                                showSettingsDialog = true
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("⚙️", fontSize = 15.sp)
+                    }
+
+                    // More button (Pause overlay / game actions)
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0x28FFFFFF))
+                            .border(1.dp, Color(0x35DFB36E), RoundedCornerShape(10.dp))
+                            .clickable {
+                                SoundManager.playClick()
+                                showGamePauseMenu = true
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "•••",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Black,
                             color = StudyParchmentCream
                         )
-                        if (isAIMode) {
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(StudyAmberAccent)
-                                    .padding(horizontal = 5.dp, vertical = 1.dp)
-                            ) {
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // ==========================================
+            // PLAYER INFORMATION BAR (3-COMPARTMENT ROW MATCHING REFERENCE)
+            // [ You / White ] [ ⏱ 09:48 ] [ AI / Black ]
+            // ==========================================
+            val isWhiteTurn = gameState.turn == PieceColor.WHITE
+            val isBlackTurn = gameState.turn == PieceColor.BLACK
+
+            val youColor = if (isAIMode) humanColor else PieceColor.WHITE
+            val oppColor = if (isAIMode) aiColor else PieceColor.BLACK
+
+            val isYouActive = gameState.turn == youColor && !outcome.isOver
+            val isOppActive = gameState.turn == oppColor && !outcome.isOver
+
+            val youAdvantage = if (youColor == PieceColor.WHITE) whiteAdvantage else blackAdvantage
+            val oppAdvantage = if (oppColor == PieceColor.WHITE) whiteAdvantage else blackAdvantage
+
+            val youInCheck = gameState.turn == youColor && isInCheck(gameState.board, youColor)
+            val oppInCheck = gameState.turn == oppColor && isInCheck(gameState.board, oppColor)
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Left Compartment: You
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp)
+                        .shadow(if (isYouActive) 6.dp else 1.dp, RoundedCornerShape(10.dp), spotColor = Color(0x66DFB36E))
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(
+                            if (isYouActive) {
+                                Brush.verticalGradient(
+                                    listOf(Color(0xE6261C14), Color(0xFA1A110B))
+                                )
+                            } else {
+                                Brush.verticalGradient(
+                                    listOf(Color(0xCC16100B), Color(0xCC16100B))
+                                )
+                            }
+                        )
+                        .border(
+                            width = if (isYouActive) 1.5.dp else 1.dp,
+                            color = if (isYouActive) StudyAmberAccent else Color(0x25DFB36E),
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // User avatar
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0x33FFFFFF))
+                                .border(0.8.dp, Color(0x35DFB36E), RoundedCornerShape(8.dp))
+                        ) {
+                            Text(text = "👤", fontSize = 16.sp)
+                        }
+
+                        Spacer(modifier = Modifier.width(7.dp))
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = aiDifficulty.name,
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFF1B1207)
+                                    text = if (isAIMode) "You" else player1Name,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = StudyParchmentCream,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                if (youAdvantage > 0) {
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "+$youAdvantage",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = StudyAmberAccent
+                                    )
+                                }
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.5.dp)
+                                        .clip(CircleShape)
+                                        .background(if (youColor == PieceColor.WHITE) Color.White else Color(0xFF222222))
+                                        .border(0.5.dp, Color.Gray, CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (youInCheck) "CHECK!" else youColor.name.lowercase().replaceFirstChar { it.uppercase() },
+                                    fontSize = 9.5.sp,
+                                    fontWeight = if (youInCheck) FontWeight.Black else FontWeight.Normal,
+                                    color = if (youInCheck) Color(0xFFFF6B6B) else Color(0xFFAFA293)
                                 )
                             }
                         }
                     }
-                    val min = gameDurationSeconds / 60
-                    val sec = gameDurationSeconds % 60
-                    Text(
-                        text = "Move ${gameState.fullmoveNumber} • %02d:%02d".format(min, sec),
-                        fontSize = 10.5.sp,
-                        color = Color(0xFFAFA293)
-                    )
                 }
 
-                // Quick Header Actions (Right)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    modifier = Modifier.align(Alignment.CenterEnd)
+                // Center Compartment: Match Clock (e.g. 09:48)
+                val totalSecs = gameDurationSeconds
+                val clockMins = totalSecs / 60
+                val clockSecs = totalSecs % 60
+                val clockStr = "%02d:%02d".format(clockMins, clockSecs)
+
+                Box(
+                    modifier = Modifier
+                        .width(92.dp)
+                        .height(52.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xCC16100B))
+                        .border(1.dp, Color(0x25DFB36E), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 6.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    if (showMoveHints && !outcome.isOver) {
-                        IconButton(
-                            onClick = { toggleHints() },
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "⏱", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = clockStr,
+                            fontSize = 14.5.sp,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = StudyParchmentCream
+                        )
+                    }
+                }
+
+                // Right Compartment: AI / Opponent
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp)
+                        .shadow(if (isOppActive) 6.dp else 1.dp, RoundedCornerShape(10.dp), spotColor = Color(0x66DFB36E))
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(
+                            if (isOppActive) {
+                                Brush.verticalGradient(
+                                    listOf(Color(0xE6261C14), Color(0xFA1A110B))
+                                )
+                            } else {
+                                Brush.verticalGradient(
+                                    listOf(Color(0xCC16100B), Color(0xCC16100B))
+                                )
+                            }
+                        )
+                        .border(
+                            width = if (isOppActive) 1.5.dp else 1.dp,
+                            color = if (isOppActive) StudyAmberAccent else Color(0x25DFB36E),
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Opponent avatar
+                        Box(
+                            contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .background(if (showHints) StudyAmberAccent else Color(0x18FFFFFF))
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0x33FFFFFF))
+                                .border(0.8.dp, Color(0x35DFB36E), RoundedCornerShape(8.dp))
                         ) {
-                            Text(text = "💡", fontSize = 13.sp)
+                            Text(text = if (isAIMode) "🤖" else "👥", fontSize = 16.sp)
                         }
-                    }
 
-                    IconButton(
-                        onClick = {
-                            val next = !voiceEnabled
-                            VoiceAnnouncer.setVoiceEnabled(next)
-                            onVoiceChanged(next)
-                        },
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Text(text = if (voiceEnabled) "🎙️" else "🔇", fontSize = 13.sp)
-                    }
+                        Spacer(modifier = Modifier.width(7.dp))
 
-                    IconButton(
-                        onClick = { showHistorySheet = true },
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Text("📜", fontSize = 13.sp)
-                    }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = if (isAIMode) "AI (${aiDifficulty.name.take(3)})" else player2Name,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = StudyParchmentCream,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                if (oppAdvantage > 0) {
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "+$oppAdvantage",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = StudyAmberAccent
+                                    )
+                                }
+                            }
 
-                    IconButton(
-                        onClick = { showGamePauseMenu = true },
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Text("⚙️", fontSize = 13.sp)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.5.dp)
+                                        .clip(CircleShape)
+                                        .background(if (oppColor == PieceColor.WHITE) Color.White else Color(0xFF222222))
+                                        .border(0.5.dp, Color.Gray, CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                if (isAIMode && isAIThinking) {
+                                    Text(
+                                        text = "Thinking...",
+                                        fontSize = 9.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = StudyAmberAccent
+                                    )
+                                } else {
+                                    Text(
+                                        text = if (oppInCheck) "CHECK!" else oppColor.name.lowercase().replaceFirstChar { it.uppercase() },
+                                        fontSize = 9.5.sp,
+                                        fontWeight = if (oppInCheck) FontWeight.Black else FontWeight.Normal,
+                                        color = if (oppInCheck) Color(0xFFFF6B6B) else Color(0xFFAFA293)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -460,34 +737,7 @@ fun GameScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             // ==========================================
-            // OPPONENT SCORECARD (TOP)
-            // ==========================================
-            val topName = if (isAIMode) {
-                if (topColor == aiColor) "AI Adversary" else "You"
-            } else {
-                if (topColor == PieceColor.WHITE) player1Name else player2Name
-            }
-            val topSubtitle = if (isAIMode && topColor == aiColor) "Tier: ${aiDifficulty.name}" else topColor.name
-
-            PlayerCardView(
-                name = topName,
-                subtitle = topSubtitle,
-                color = topColor,
-                isAI = isAIMode && topColor == aiColor,
-                isTurn = gameState.turn == topColor,
-                isThinking = isAIMode && topColor == aiColor && isAIThinking,
-                isInCheck = gameState.turn == topColor && isInCheck(gameState.board, topColor),
-                capturedPieces = if (topColor == PieceColor.WHITE) capturedWhite else capturedBlack,
-                materialAdvantage = if (topColor == PieceColor.WHITE) whiteAdvantage else blackAdvantage,
-                timerSeconds = if (topColor == PieceColor.WHITE) whiteTimeSeconds else blackTimeSeconds,
-                pieceTheme = currentPieceTheme,
-                boardTheme = currentBoardTheme
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // ==========================================
-            // PHYSICAL CHESS BOARD TABLETOP
+            // CHESSBOARD CENTERPIECE (ChessBoardView)
             // ==========================================
             Box(
                 modifier = Modifier
@@ -514,7 +764,7 @@ fun GameScreen(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // "YOUR MOVE" Overlay Banner with fast 1.1s total duration and smooth scale+fade
+                // "YOUR MOVE" Overlay Banner (fast 750ms duration, smooth fade)
                 androidx.compose.animation.AnimatedVisibility(
                     visible = showYourMoveBanner,
                     enter = fadeIn(tween(180)) + scaleIn(initialScale = 0.85f, animationSpec = tween(180)),
@@ -550,195 +800,76 @@ fun GameScreen(
                 }
             }
 
-            // ==========================================
-            // BEST MOVE SUGGESTIONS (HINTS)
-            // ==========================================
-            AnimatedVisibility(
-                visible = showHints,
-                enter = fadeIn(tween(250)) + slideInVertically(tween(250)),
-                exit = fadeOut(tween(180)) + slideOutVertically(tween(180))
-            ) {
-                MoveSuggestionSection(
-                    suggestions = hintSuggestions,
-                    selectedSuggestion = previewMove,
-                    isCalculating = isCalculatingHints,
-                    pieceTheme = currentPieceTheme,
-                    onSelectSuggestion = { previewMove = it },
-                    onCloseHints = {
-                        showHints = false
-                        previewMove = null
-                    },
-                    modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
-                )
-            }
-
             Spacer(modifier = Modifier.height(6.dp))
 
             // ==========================================
-            // PLAYER SCORECARD (BOTTOM)
+            // BEST MOVES / HINT SYSTEM (3 CARDS + DETAIL CARD)
             // ==========================================
-            val bottomName = if (isAIMode) {
-                if (bottomColor == aiColor) "AI Adversary" else "You"
-            } else {
-                if (bottomColor == PieceColor.WHITE) player1Name else player2Name
-            }
-            val bottomSubtitle = if (isAIMode && bottomColor == humanColor) "Tabletop Commander" else bottomColor.name
-
-            PlayerCardView(
-                name = bottomName,
-                subtitle = bottomSubtitle,
-                color = bottomColor,
-                isAI = isAIMode && bottomColor == aiColor,
-                isTurn = gameState.turn == bottomColor,
-                isThinking = isAIMode && bottomColor == aiColor && isAIThinking,
-                isInCheck = gameState.turn == bottomColor && isInCheck(gameState.board, bottomColor),
-                capturedPieces = if (bottomColor == PieceColor.WHITE) capturedWhite else capturedBlack,
-                materialAdvantage = if (bottomColor == PieceColor.WHITE) whiteAdvantage else blackAdvantage,
-                timerSeconds = if (bottomColor == PieceColor.WHITE) whiteTimeSeconds else blackTimeSeconds,
+            MoveSuggestionSection(
+                suggestions = hintSuggestions,
+                selectedSuggestion = previewMove,
+                isCalculating = isCalculatingHints,
                 pieceTheme = currentPieceTheme,
-                boardTheme = currentBoardTheme
+                onSelectSuggestion = { previewMove = it },
+                onToggleHints = { toggleHints() },
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // ==========================================
-            // COMPACT TACTILE CONTROLS (UNDO, HINT, DRAW, RESIGN, OR POST-GAME REVIEW)
+            // BOTTOM GAMEPLAY CONTROLS (4 COMPACT PILL BUTTONS)
+            // [ ↩ Undo ] [ 💡 Hint ] [ 🔄 New Game ] [ ⇄ Flip Board ]
             // ==========================================
-            if (outcome.isOver) {
-                // When game concludes and player is reviewing the board:
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // ANALYSE GAME Button
-                    Button(
-                        onClick = {
-                            onAnalyseGame?.invoke(
-                                gameState.history,
-                                outcome,
-                                gameDurationSeconds,
-                                oppName,
-                                if (isAIMode) aiDifficulty else null,
-                                humanColor
-                            )
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = StudyAmberAccent),
-                        modifier = Modifier.weight(1.3f).height(44.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "🔍 ", fontSize = 12.sp)
-                            Text(
-                                text = "ANALYSE",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 1.sp,
-                                color = Color(0xFF1B140E)
-                            )
-                        }
-                    }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // UNDO
+                GameControlPill(
+                    icon = "↩",
+                    label = "Undo",
+                    enabled = !isAIThinking && gameStateHistory.size > 1 && !outcome.isOver,
+                    isActive = false,
+                    onClick = { handleUndo() },
+                    modifier = Modifier.weight(1f)
+                )
 
-                    // RESULT CARD Button
-                    OutlinedButton(
-                        onClick = { showGameOverOverlay = true },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = StudyParchmentCream),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x40D4A373)),
-                        modifier = Modifier.weight(1f).height(44.dp)
-                    ) {
-                        Text("RESULT", fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                    }
+                // HINT
+                GameControlPill(
+                    icon = if (isCalculatingHints) "⏳" else "💡",
+                    label = if (isCalculatingHints) "Thinking" else "Hint",
+                    enabled = !isAIThinking && !outcome.isOver,
+                    isActive = showHints || isCalculatingHints,
+                    onClick = { toggleHints() },
+                    modifier = Modifier.weight(1f)
+                )
 
-                    // RESTART Button
-                    Button(
-                        onClick = { handleRestart() },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF38291F)),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x35FFFFFF)),
-                        modifier = Modifier.weight(1f).height(44.dp)
-                    ) {
-                        Text("RESTART", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = StudyParchmentCream)
-                    }
-                }
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // UNDO
-                    OutlinedButton(
-                        onClick = { handleUndo() },
-                        enabled = !isAIThinking && gameStateHistory.size > 1 && !outcome.isOver,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = StudyParchmentCream),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x35FFFFFF)),
-                        modifier = Modifier.weight(1f).height(44.dp)
-                    ) {
-                        Text("UNDO", fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                    }
+                // NEW GAME
+                GameControlPill(
+                    icon = "🔄",
+                    label = "New Game",
+                    enabled = !isAIThinking,
+                    isActive = false,
+                    onClick = { confirmDialogType = "restart" },
+                    modifier = Modifier.weight(1.15f)
+                )
 
-                    // HINT
-                    if (showMoveHints) {
-                        Button(
-                            onClick = { toggleHints() },
-                            enabled = !isAIThinking && !outcome.isOver,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = if (showHints) {
-                                ButtonDefaults.buttonColors(containerColor = StudyAmberAccent)
-                            } else {
-                                ButtonDefaults.buttonColors(containerColor = Color(0xFF2C2118))
-                            },
-                            border = androidx.compose.foundation.BorderStroke(
-                                1.dp,
-                                if (showHints) StudyAmberAccent else Color(0x40D4A373)
-                            ),
-                            modifier = Modifier.weight(1.15f).height(44.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = if (isCalculatingHints) "⏳ " else "💡 ",
-                                    fontSize = 12.sp
-                                )
-                                Text(
-                                    text = if (isCalculatingHints) "THINKING" else if (showHints) "HINTS ON" else "HINT",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Black,
-                                    letterSpacing = 1.sp,
-                                    color = if (showHints) Color(0xFF1B140E) else StudyParchmentCream
-                                )
-                            }
-                        }
-                    }
-
-                    // DRAW
-                    OutlinedButton(
-                        onClick = { confirmDialogType = "draw" },
-                        enabled = !isAIThinking && !outcome.isOver,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = StudyParchmentCream),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x35FFFFFF)),
-                        modifier = Modifier.weight(0.95f).height(44.dp)
-                    ) {
-                        Text("DRAW", fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                    }
-
-                    // RESIGN
-                    Button(
-                        onClick = { confirmDialogType = "resign" },
-                        enabled = !isAIThinking && !outcome.isOver,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0x35EF4444)),
-                        modifier = Modifier.weight(0.95f).height(44.dp)
-                    ) {
-                        Text(
-                            text = "RESIGN",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp,
-                            color = Color(0xFFFF6B6B)
-                        )
-                    }
-                }
+                // FLIP BOARD
+                GameControlPill(
+                    icon = "⇄",
+                    label = "Flip Board",
+                    enabled = true,
+                    isActive = manualFlip,
+                    onClick = {
+                        manualFlip = !manualFlip
+                        SoundManager.playClick()
+                    },
+                    modifier = Modifier.weight(1.15f)
+                )
             }
         }
 
@@ -900,6 +1031,69 @@ fun GameScreen(
                     }
                 },
                 containerColor = Color(0xFF221A14)
+            )
+        }
+    }
+}
+
+/**
+ * Compact Game Control Pill Button matching reference styling:
+ * [ icon label ] with rounded pill shape, dark translucent wood surface,
+ * warm gold border, and gold highlight when active.
+ */
+@Composable
+private fun GameControlPill(
+    icon: String,
+    label: String,
+    enabled: Boolean,
+    isActive: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(38.dp)
+            .shadow(if (isActive) 6.dp else 1.dp, RoundedCornerShape(19.dp), spotColor = Color(0x66DFB36E))
+            .clip(RoundedCornerShape(19.dp))
+            .background(
+                if (isActive) {
+                    Brush.verticalGradient(
+                        listOf(Color(0xFFDFB36E), Color(0xFFB8893F))
+                    )
+                } else {
+                    Brush.verticalGradient(
+                        listOf(Color(0xCC1A120C), Color(0xCC1A120C))
+                    )
+                }
+            )
+            .border(
+                width = 1.dp,
+                color = if (isActive) StudyAmberAccent else Color(0x35DFB36E),
+                shape = RoundedCornerShape(19.dp)
+            )
+            .clickable(enabled = enabled) {
+                onClick()
+            }
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = icon,
+                fontSize = 11.5.sp,
+                color = if (isActive) Color(0xFF140D08) else if (enabled) StudyParchmentCream else Color(0x55FFFFFF)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = label,
+                fontSize = 10.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isActive) Color(0xFF140D08) else if (enabled) StudyParchmentCream else Color(0x55FFFFFF),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
